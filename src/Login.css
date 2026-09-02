@@ -1,0 +1,882 @@
+/* =========================================================
+   LOGIN PAGE
+   ========================================================= */
+
+.login-page {
+  min-height: 100vh;
+  width: 100%;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 30px 20px 60px;
+
+  position: relative;
+
+  background:
+    radial-gradient(
+      circle at 8% 15%,
+      rgba(36, 95, 180, 0.08),
+      transparent 180px
+    ),
+    radial-gradient(
+      circle at 92% 15%,
+      rgba(36, 95, 180, 0.08),
+      transparent 180px
+    ),
+    #eef5ff;
+
+  overflow-x: hidden;
+}
+
+
+/* =========================================================
+   LOGIN CARD
+   ========================================================= */
+
+.login-card {
+  width: 100%;
+  max-width: 1280px;
+
+  min-height: 820px;
+
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+
+  background: #ffffff;
+
+  border-radius: 22px;
+
+  overflow: hidden;
+
+  box-shadow:
+    0 18px 50px rgba(24, 65, 120, 0.13);
+}
+
+
+/* =========================================================
+   LEFT SIDE
+   ========================================================= */
+
+.login-left {
+  position: relative;
+
+  padding: 55px 50px 35px;
+
+  display: flex;
+  flex-direction: column;
+
+  background: #ffffff;
+
+  overflow: hidden;
+}
+
+
+/* =========================================================
+   LEFT DIVIDER
+   ========================================================= */
+
+.login-left::after {
+  content: "";
+
+  position: absolute;
+
+  top: 30px;
+  bottom: 30px;
+  right: 0;
+
+  width: 1px;
+
+  background: #dfe7f2;
+}
+
+
+/* =========================================================
+   LOGO
+   ========================================================= */
+
+.login-logo-area {
+  width: 100%;
+
+  display: flex;
+  justify-content: center;
+
+  margin-bottom: 10px;
+}
+
+.login-company-logo {
+  display: block;
+
+  width: 320px;
+  max-width: 80%;
+
+  height: auto;
+
+  object-fit: contain;
+
+  margin: 0 auto;
+
+  background: transparent;
+
+  border: none;
+}
+
+
+/* =========================================================
+   YAKAP BRAND
+   ========================================================= */
+
+.yakap-brand {
+  text-align: center;
+
+  margin-top: 0;
+}
+
+.yakap-brand h1 {
+  margin: 10px 0 0;
+
+  color: #07347d;
+
+  font-size: 70px;
+  line-height: 0.95;
+
+  font-weight: 900;
+
+  letter-spacing: 6px;
+}
+
+.yakap-brand h2 {
+  margin: 6px 0 0;
+
+  color: #07347d;
+
+  font-size: 27px;
+
+  font-weight: 700;
+
+  letter-spacing: 9px;
+}
+
+
+/* =========================================================
+   HEARTBEAT
+   ========================================================= */
+
+.heartbeat-line {
+  width: 100%;
+  height: 18px;
+
+  position: relative;
+
+  margin: 4px auto 0;
+}
+
+.heartbeat-line::before {
+  content: "";
+
+  position: absolute;
+
+  left: 4%;
+  right: 4%;
+
+  top: 9px;
+
+  height: 2px;
+
+  background: #07347d;
+}
+
+.heartbeat-line span {
+  position: absolute;
+
+  left: 50%;
+  top: 0;
+
+  width: 90px;
+  height: 18px;
+
+  transform: translateX(-50%);
+
+  background: #ffffff;
+}
+
+.heartbeat-line span::before {
+  content: "";
+
+  position: absolute;
+
+  left: 30px;
+  top: 8px;
+
+  width: 28px;
+  height: 2px;
+
+  background: #07347d;
+
+  transform: rotate(-45deg);
+}
+
+.yakap-heart {
+  margin-top: 8px;
+
+  color: #07347d;
+
+  font-size: 23px;
+
+  line-height: 1;
+}
+
+
+/* =========================================================
+   SUBTITLE
+   ========================================================= */
+
+.yakap-subtitle {
+  margin-top: 8px;
+
+  color: #101f3c;
+
+  font-size: 18px;
+
+  line-height: 1.4;
+
+  font-weight: 700;
+}
+
+
+/* =========================================================
+   FEATURES
+   ========================================================= */
+
+.login-features {
+  width: 100%;
+
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+
+  gap: 12px;
+
+  margin-top: 24px;
+}
+
+.login-feature-card {
+  min-height: 150px;
+
+  padding: 16px 10px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+
+  text-align: center;
+
+  background: #ffffff;
+
+  border: 1px solid #dfe6ef;
+
+  border-radius: 11px;
+
+  box-shadow:
+    0 4px 12px rgba(20, 50, 90, 0.07);
+}
+
+.feature-icon {
+  width: 54px;
+  height: 54px;
+
+  margin-bottom: 10px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 3px solid #07347d;
+
+  border-radius: 12px;
+
+  color: #07347d;
+
+  font-size: 26px;
+
+  font-weight: 800;
+}
+
+.login-feature-card strong {
+  display: block;
+
+  color: #07347d;
+
+  font-size: 12px;
+
+  font-weight: 800;
+}
+
+.login-feature-card p {
+  margin: 8px 0 0;
+
+  color: #526174;
+
+  font-size: 11px;
+
+  line-height: 1.45;
+}
+
+
+/* =========================================================
+   CARE MESSAGE
+   ========================================================= */
+
+.care-message {
+  margin-top: auto;
+
+  min-height: 62px;
+
+  display: flex;
+  align-items: center;
+
+  padding: 8px 18px;
+
+  border-radius: 10px;
+
+  background: #07347d;
+
+  color: #ffffff;
+
+  font-size: 18px;
+
+  font-weight: 700;
+}
+
+.care-heart {
+  width: 46px;
+  height: 46px;
+
+  margin-right: 14px;
+
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  background: #ffffff;
+
+  color: #07347d;
+
+  font-size: 24px;
+}
+
+
+/* =========================================================
+   RIGHT SIDE
+   ========================================================= */
+
+.login-right {
+  min-height: 100%;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 50px 65px;
+
+  background: #ffffff;
+}
+
+.login-form-container {
+  width: 100%;
+  max-width: 500px;
+}
+
+
+/* =========================================================
+   WELCOME
+   ========================================================= */
+
+.login-welcome {
+  text-align: center;
+
+  margin-bottom: 35px;
+}
+
+.login-welcome h2 {
+  margin: 0;
+
+  color: #092f69;
+
+  font-size: 38px;
+
+  font-weight: 800;
+}
+
+.welcome-line {
+  width: 80px;
+  height: 4px;
+
+  margin: 22px auto;
+
+  border-radius: 5px;
+
+  background: #092f69;
+}
+
+.login-welcome p {
+  margin: 0;
+
+  color: #5c6778;
+
+  font-size: 17px;
+}
+
+
+/* =========================================================
+   FORM
+   ========================================================= */
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+
+  margin-bottom: 9px;
+
+  color: #092f69;
+
+  font-size: 16px;
+
+  font-weight: 700;
+}
+
+
+/* =========================================================
+   INPUT
+   ========================================================= */
+
+.input-wrapper {
+  width: 100%;
+  height: 62px;
+
+  display: flex;
+  align-items: center;
+
+  padding: 0 16px;
+
+  background: #ffffff;
+
+  border: 1.5px solid #d5deea;
+
+  border-radius: 10px;
+
+  transition: 0.2s;
+}
+
+.input-wrapper:focus-within {
+  border-color: #092f69;
+
+  box-shadow:
+    0 0 0 3px rgba(9, 47, 105, 0.08);
+}
+
+.input-icon {
+  width: 28px;
+
+  margin-right: 12px;
+
+  color: #596a80;
+
+  font-size: 21px;
+
+  text-align: center;
+
+  flex-shrink: 0;
+}
+
+.input-wrapper input {
+  width: 100%;
+  height: 100%;
+
+  border: none;
+  outline: none;
+
+  background: transparent;
+
+  color: #172337;
+
+  font-size: 16px;
+}
+
+.input-wrapper input::placeholder {
+  color: #8995a7;
+}
+
+.password-eye {
+  margin-left: 10px;
+
+  color: #596a80;
+
+  font-size: 19px;
+}
+
+
+/* =========================================================
+   FORGOT PASSWORD
+   ========================================================= */
+
+.forgot-password {
+  margin-top: -2px;
+  margin-bottom: 22px;
+
+  text-align: right;
+
+  color: #073ca5;
+
+  font-size: 14px;
+
+  cursor: pointer;
+}
+
+.forgot-password:hover {
+  text-decoration: underline;
+}
+
+
+/* =========================================================
+   ERROR
+   ========================================================= */
+
+.login-error {
+  margin-bottom: 15px;
+
+  padding: 11px 14px;
+
+  border: 1px solid #ffd4d4;
+
+  border-radius: 8px;
+
+  background: #fff4f4;
+
+  color: #c0392b;
+
+  font-size: 13px;
+}
+
+
+/* =========================================================
+   LOGIN BUTTON
+   ========================================================= */
+
+.login-button {
+  width: 100%;
+  height: 62px;
+
+  border: none;
+
+  border-radius: 10px;
+
+  background: #062d78;
+
+  color: #ffffff;
+
+  font-size: 18px;
+
+  font-weight: 800;
+
+  letter-spacing: 0.3px;
+
+  transition: 0.2s;
+}
+
+.login-button:hover {
+  background: #05245f;
+
+  transform: translateY(-1px);
+
+  box-shadow:
+    0 6px 16px rgba(6, 45, 120, 0.18);
+}
+
+.login-button:disabled {
+  opacity: 0.65;
+
+  cursor: not-allowed;
+
+  transform: none;
+}
+
+.login-lock {
+  margin-right: 10px;
+
+  font-size: 16px;
+}
+
+
+/* =========================================================
+   OR
+   ========================================================= */
+
+.login-or {
+  display: flex;
+  align-items: center;
+
+  gap: 16px;
+
+  margin: 20px 0;
+}
+
+.login-or span {
+  flex: 1;
+
+  height: 1px;
+
+  background: #d9e0e9;
+}
+
+.login-or strong {
+  color: #596579;
+
+  font-size: 14px;
+}
+
+
+/* =========================================================
+   SECURE LOGIN
+   ========================================================= */
+
+.secure-login {
+  min-height: 82px;
+
+  display: flex;
+  align-items: center;
+
+  padding: 14px 20px;
+
+  border: 1.5px solid #d9e2ef;
+
+  border-radius: 10px;
+
+  background: #ffffff;
+}
+
+.secure-icon {
+  width: 48px;
+  height: 48px;
+
+  margin-right: 15px;
+
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 2px solid #07347d;
+
+  border-radius: 50%;
+
+  color: #07347d;
+
+  font-size: 21px;
+
+  font-weight: 800;
+}
+
+.secure-login strong {
+  display: block;
+
+  color: #07347d;
+
+  font-size: 16px;
+}
+
+.secure-login p {
+  margin: 4px 0 0;
+
+  color: #596579;
+
+  font-size: 13px;
+}
+
+
+/* =========================================================
+   FOOTER
+   ========================================================= */
+
+.login-footer {
+  position: absolute;
+
+  left: 0;
+  right: 0;
+  bottom: 12px;
+
+  text-align: center;
+
+  color: #526174;
+
+  font-size: 12px;
+}
+
+.login-footer strong {
+  color: #073ca5;
+}
+
+
+/* =========================================================
+   RESPONSIVE - 1100px
+   ========================================================= */
+
+@media (max-width: 1100px) {
+
+  .login-card {
+    max-width: 1000px;
+  }
+
+  .login-left {
+    padding: 45px 35px 30px;
+  }
+
+  .login-right {
+    padding: 40px;
+  }
+
+  .login-company-logo {
+    width: 270px;
+  }
+
+  .yakap-brand h1 {
+    font-size: 60px;
+  }
+
+  .yakap-brand h2 {
+    font-size: 23px;
+  }
+
+  .yakap-subtitle {
+    font-size: 16px;
+  }
+}
+
+
+/* =========================================================
+   RESPONSIVE - 850px
+   ========================================================= */
+
+@media (max-width: 850px) {
+
+  .login-page {
+    padding: 20px;
+
+    align-items: flex-start;
+  }
+
+  .login-card {
+    grid-template-columns: 1fr;
+
+    max-width: 600px;
+
+    margin: 20px auto;
+  }
+
+  .login-left {
+    min-height: auto;
+
+    padding: 40px 30px 30px;
+  }
+
+  .login-left::after {
+    display: none;
+  }
+
+  .login-right {
+    min-height: auto;
+
+    padding: 40px 30px;
+  }
+
+  .login-features {
+    grid-template-columns: 1fr;
+  }
+
+  .login-feature-card {
+    min-height: auto;
+
+    padding: 18px;
+  }
+
+  .care-message {
+    margin-top: 20px;
+  }
+
+  .login-footer {
+    position: static;
+
+    margin: 5px 0 10px;
+  }
+}
+
+
+/* =========================================================
+   RESPONSIVE - 650px
+   ========================================================= */
+
+@media (max-width: 650px) {
+
+  .login-company-logo {
+    width: 230px;
+  }
+
+  .yakap-brand h1 {
+    font-size: 48px;
+
+    letter-spacing: 4px;
+  }
+
+  .yakap-brand h2 {
+    font-size: 19px;
+
+    letter-spacing: 6px;
+  }
+
+  .yakap-subtitle {
+    font-size: 15px;
+  }
+
+  .login-right {
+    padding: 35px 22px;
+  }
+
+  .login-welcome h2 {
+    font-size: 30px;
+  }
+
+  .login-welcome p {
+    font-size: 15px;
+  }
+
+  .input-wrapper {
+    height: 58px;
+  }
+
+  .login-button {
+    height: 60px;
+  }
+
+  .care-message {
+    font-size: 14px;
+  }
+
+  .care-heart {
+    width: 40px;
+    height: 40px;
+
+    margin-right: 10px;
+
+    font-size: 20px;
+  }
+  
+}

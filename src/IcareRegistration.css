@@ -1,0 +1,1527 @@
+/* =========================================================
+   ICARE REGISTRATION PAGE
+========================================================= */
+
+.icare-page {
+  width: 100%;
+  min-height: 100vh;
+  padding: 30px;
+  box-sizing: border-box;
+  background: #f5f7fb;
+  color: #1e293b;
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+
+/* =========================================================
+   PAGE HEADER
+========================================================= */
+
+.icare-page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.icare-title-area h1 {
+  margin: 0;
+  color: #172b4d;
+  font-size: 30px;
+  font-weight: 800;
+  letter-spacing: -0.8px;
+}
+
+.icare-title-area p {
+  margin: 7px 0 0;
+  color: #64748b;
+  font-size: 15px;
+  font-weight: 500;
+}
+
+
+/* =========================================================
+   TOOLBAR
+   SEARCH | COMPANY + ADD COMPANY | SUMMARY
+========================================================= */
+
+.icare-toolbar {
+  display: grid;
+
+  grid-template-columns:
+    minmax(280px, 1fr)
+    300px
+    repeat(4, minmax(130px, 1fr));
+
+  gap: 10px;
+
+  margin-bottom: 20px;
+
+  align-items: stretch;
+}
+
+
+/* =========================================================
+   COMPANY + ADD COMPANY
+========================================================= */
+
+.icare-company-row {
+  width: 100%;
+
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+
+  gap: 8px;
+
+  box-sizing: border-box;
+}
+
+
+/* COMPANY SELECTOR */
+
+.icare-company-row .icare-company-selector {
+  flex: 1 1 auto;
+
+  width: auto;
+  min-width: 0;
+
+  height: 52px;
+  min-height: 52px;
+  max-height: 52px;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+
+  padding: 6px 12px !important;
+
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+
+  background: #ffffff;
+
+  box-shadow: 0 3px 12px rgba(15, 23, 42, 0.05);
+
+  box-sizing: border-box;
+}
+
+
+/* COMPANY LABEL */
+
+.icare-company-row .icare-company-selector label {
+  display: block;
+
+  margin: 0 0 2px 0 !important;
+
+  color: #64748b;
+
+  font-size: 8px !important;
+  font-weight: 700;
+
+  line-height: 10px;
+
+  letter-spacing: 0.3px;
+}
+
+
+/* COMPANY SELECT */
+
+.icare-company-row .icare-company-selector select {
+  width: 100%;
+
+  height: 20px;
+  min-height: 20px;
+
+  margin: 0;
+  padding: 0 !important;
+
+  border: none;
+  outline: none;
+
+  background: transparent;
+
+  color: #0f172a;
+
+  font-family: inherit;
+
+  font-size: 11px !important;
+  font-weight: 700;
+
+  line-height: 20px;
+
+  cursor: pointer;
+
+  box-sizing: border-box;
+}
+
+
+/* ADD COMPANY BUTTON */
+
+.icare-company-row .icare-add-company-button {
+  flex: 0 0 90px !important;
+  width: 90px !important;
+  height: 52px !important;
+  min-height: 52px !important;
+  max-height: 52px !important;
+
+  padding: 0 6px !important;
+
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  gap: 4px !important;
+
+  border-radius: 9px !important;
+  font-size: 9px !important;
+}
+
+
+/* =========================================================
+   SUMMARY CARDS
+========================================================= */
+
+.icare-summary-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(4, minmax(0, 1fr));
+
+  gap: 10px;
+
+  width: 100%;
+
+  margin-bottom: 16px;
+
+  box-sizing: border-box;
+}
+
+.icare-summary-grid .icare-summary-card {
+  width: 100%;
+  min-width: 0;
+}
+
+
+/* =========================================================
+   SEARCH
+========================================================= */
+
+.icare-search-box {
+  min-height: 72px;
+
+  display: flex;
+  align-items: center;
+
+  padding: 0 18px;
+
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 3px 12px rgba(15, 23, 42, 0.05);
+
+  box-sizing: border-box;
+}
+
+.icare-search-icon {
+  margin-right: 10px;
+
+  font-size: 18px;
+
+  opacity: 0.6;
+}
+
+.icare-search-box input {
+  width: 100%;
+
+  border: none;
+  outline: none;
+
+  background: transparent;
+
+  color: #0f172a;
+
+  font-family: inherit;
+  font-size: 13px;
+}
+
+.icare-search-box input::placeholder {
+  color: #94a3b8;
+}
+
+
+/* =========================================================
+   SUMMARY CARDS
+========================================================= */
+
+.icare-summary-card {
+  min-height: 58px;
+
+  display: flex;
+  align-items: center;
+
+  gap: 9px;
+
+  padding: 9px 11px;
+
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 3px 12px rgba(15, 23, 42, 0.05);
+
+  box-sizing: border-box;
+}
+
+.icare-summary-icon {
+  width: 34px;
+  height: 34px;
+
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 9px;
+
+  background: #eff6ff;
+  color: #2563eb;
+
+  font-size: 15px;
+}
+
+.icare-summary-icon.registered {
+  background: #ecfdf5;
+  color: #16a34a;
+}
+
+.icare-summary-icon.philhealth {
+  background: #fff7ed;
+  color: #ea580c;
+}
+
+.icare-summary-icon.not-registered {
+  background: #fef2f2;
+  color: #dc2626;
+}
+
+.icare-summary-card span {
+  display: block;
+
+  margin-bottom: 2px;
+
+  color: #64748b;
+
+  font-size: 8px;
+  font-weight: 700;
+
+  letter-spacing: 0.3px;
+}
+
+.icare-summary-card strong {
+  display: block;
+
+  color: #0f172a;
+
+  font-size: 17px;
+  font-weight: 800;
+}
+
+.registered-number {
+  color: #16a34a !important;
+}
+
+.not-registered-number {
+  color: #dc2626 !important;
+}
+
+
+/* =========================================================
+   TABLE PANEL
+========================================================= */
+
+.icare-table-panel {
+  width: 100%;
+
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 4px 18px rgba(15, 23, 42, 0.05);
+
+  overflow: hidden;
+}
+
+
+/* =========================================================
+   TABLE TITLE
+========================================================= */
+
+.icare-table-title {
+  min-height: 76px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 15px;
+
+  padding: 16px 20px;
+
+  border-bottom: 1px solid #e2e8f0;
+
+  box-sizing: border-box;
+}
+
+.icare-table-title h2 {
+  margin: 0;
+
+  color: #172b4d;
+
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.icare-table-title p {
+  margin: 5px 0 0;
+
+  color: #94a3b8;
+
+  font-size: 11px;
+}
+
+
+/* =========================================================
+   TABLE ACTIONS
+========================================================= */
+
+.icare-table-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+
+  gap: 10px;
+}
+
+.icare-record-count {
+  height: 34px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 0 12px;
+
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+
+  background: #f8fafc;
+  color: #64748b;
+
+  font-size: 11px;
+  font-weight: 700;
+
+  white-space: nowrap;
+}
+
+
+/* =========================================================
+   ADD PATIENT BUTTON
+========================================================= */
+
+.table-add-button {
+  height: 36px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 7px;
+
+  padding: 0 15px;
+
+  border: none;
+  border-radius: 9px;
+
+  background: #2563eb;
+  color: #ffffff;
+
+  font-family: inherit;
+
+  font-size: 11px;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  box-shadow:
+    0 4px 10px rgba(37, 99, 235, 0.18);
+
+  transition: all 0.2s ease;
+}
+
+.table-add-button:hover {
+  background: #1d4ed8;
+
+  transform: translateY(-1px);
+
+  box-shadow:
+    0 7px 15px rgba(37, 99, 235, 0.25);
+}
+
+.table-add-button:active {
+  transform: translateY(0);
+}
+
+.add-icon {
+  font-size: 17px;
+  line-height: 1;
+}
+
+
+/* =========================================================
+   TABLE
+========================================================= */
+
+.icare-table-wrapper {
+  width: 100%;
+
+  overflow-x: auto;
+  overflow-y: visible;
+}
+
+.icare-table {
+  width: 100%;
+
+  min-width: 1550px;
+
+  border-collapse: separate;
+  border-spacing: 0;
+
+  table-layout: fixed;
+
+  font-size: 11px;
+}
+
+.icare-table thead th {
+  height: 44px;
+
+  padding: 9px 12px;
+
+  border-bottom: 1px solid #dbe3ec;
+
+  background: #f8fafc;
+  color: #475569;
+
+  font-size: 10px;
+  font-weight: 800;
+
+  letter-spacing: 0.3px;
+
+  text-align: left;
+
+  white-space: nowrap;
+
+  box-sizing: border-box;
+}
+
+.icare-table tbody td {
+  height: 52px;
+
+  padding: 9px 12px;
+
+  border-bottom: 1px solid #eef2f7;
+
+  color: #334155;
+
+  font-size: 11px;
+
+  vertical-align: middle;
+
+  overflow: hidden;
+
+  text-overflow: ellipsis;
+
+  white-space: nowrap;
+
+  box-sizing: border-box;
+}
+
+.icare-table tbody tr {
+  transition: background 0.15s ease;
+}
+
+.icare-table tbody tr:hover {
+  background: #f8fbff;
+}
+
+.icare-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+
+/* =========================================================
+   COLUMN WIDTHS
+========================================================= */
+
+.icare-table th:nth-child(1),
+.icare-table td:nth-child(1) {
+  width: 90px;
+}
+
+.icare-table th:nth-child(2),
+.icare-table td:nth-child(2) {
+  width: 50px;
+  text-align: center;
+}
+
+.icare-table th:nth-child(3),
+.icare-table td:nth-child(3) {
+  width: 125px;
+}
+
+.icare-table th:nth-child(4),
+.icare-table td:nth-child(4) {
+  width: 110px;
+}
+
+.icare-table th:nth-child(5),
+.icare-table td:nth-child(5) {
+  width: 110px;
+}
+
+.icare-table th:nth-child(6),
+.icare-table td:nth-child(6) {
+  width: 110px;
+}
+
+.icare-table th:nth-child(7),
+.icare-table td:nth-child(7) {
+  width: 115px;
+}
+
+.icare-table th:nth-child(8),
+.icare-table td:nth-child(8) {
+  width: 220px;
+}
+
+.icare-table th:nth-child(9),
+.icare-table td:nth-child(9) {
+  width: 85px;
+  text-align: center;
+}
+
+.icare-table th:nth-child(10),
+.icare-table td:nth-child(10) {
+  width: 155px;
+  text-align: center;
+}
+
+.icare-table th:nth-child(11),
+.icare-table td:nth-child(11) {
+  width: 125px;
+}
+
+.icare-table th:nth-child(12),
+.icare-table td:nth-child(12) {
+  width: 110px;
+  text-align: center;
+}
+
+.icare-table th:nth-child(13),
+.icare-table td:nth-child(13) {
+  width: 180px;
+}
+
+.icare-table th:nth-child(14),
+.icare-table td:nth-child(14) {
+  width: 100px;
+  min-width: 100px;
+  max-width: 100px;
+  text-align: center;
+}
+
+
+/* =========================================================
+   CELLS
+========================================================= */
+
+.philhealth-cell {
+  font-weight: 600;
+}
+
+.name-cell {
+  font-weight: 700;
+  color: #1e293b !important;
+}
+
+.address-cell,
+.remarks-cell {
+  color: #64748b !important;
+}
+
+
+/* =========================================================
+   PCU
+========================================================= */
+
+.pcu-badge {
+  min-width: 42px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 5px 9px;
+
+  border-radius: 7px;
+
+  background: #f1f5f9;
+  color: #64748b;
+
+  font-size: 9px;
+  font-weight: 800;
+}
+
+.pcu-yes {
+  background: #ecfdf5;
+  color: #15803d;
+}
+
+.pcu-no {
+  background: #fef2f2;
+  color: #dc2626;
+}
+
+
+/* =========================================================
+   REGISTRATION STATUS
+========================================================= */
+
+.icare-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  min-width: 90px;
+
+  padding: 6px 10px;
+
+  border-radius: 7px;
+
+  font-size: 9px;
+  font-weight: 800;
+}
+
+.icare-status.registered {
+  background: #ecfdf5;
+  color: #15803d;
+}
+
+.icare-status.pending {
+  background: #fff7ed;
+  color: #c2410c;
+}
+
+
+/* =========================================================
+   FPE
+========================================================= */
+
+.fpe-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  min-width: 80px;
+
+  padding: 6px 9px;
+
+  border-radius: 7px;
+
+  background: #f1f5f9;
+  color: #64748b;
+
+  font-size: 9px;
+  font-weight: 800;
+}
+
+.fpe-tranch {
+  background: #eff6ff;
+  color: #2563eb;
+}
+
+.fpe-completed {
+  background: #ecfdf5;
+  color: #15803d;
+}
+
+
+/* =========================================================
+   ACTION BUTTONS
+========================================================= */
+
+.patient-action-buttons {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 7px;
+}
+
+.edit-patient-button,
+.delete-patient-button {
+  position: relative;
+
+  width: 34px;
+  height: 34px;
+
+  padding: 0;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 9px;
+
+  font-size: 0;
+
+  cursor: pointer;
+
+  transition: all 0.2s ease;
+}
+
+.edit-patient-button {
+  border: 1px solid #bfdbfe;
+
+  background: #eff6ff;
+  color: #2563eb;
+}
+
+.delete-patient-button {
+  border: 1px solid #fecaca;
+
+  background: #fef2f2;
+  color: #dc2626;
+}
+
+.edit-patient-button::before {
+  content: "✎";
+  font-size: 17px;
+}
+
+.delete-patient-button::before {
+  content: "🗑";
+  font-size: 14px;
+}
+
+.edit-patient-button:hover {
+  background: #2563eb;
+  border-color: #2563eb;
+
+  color: #ffffff;
+
+  transform: translateY(-2px);
+}
+
+.delete-patient-button:hover {
+  background: #dc2626;
+  border-color: #dc2626;
+
+  color: #ffffff;
+
+  transform: translateY(-2px);
+}
+
+.no-action {
+  color: #cbd5e1;
+}
+
+
+/* =========================================================
+   NO DATA
+========================================================= */
+
+.icare-no-data {
+  height: 280px !important;
+
+  text-align: center !important;
+  vertical-align: middle !important;
+
+  color: #64748b !important;
+}
+
+.icare-no-data-icon {
+  margin-bottom: 10px;
+
+  font-size: 34px;
+
+  opacity: 0.45;
+}
+
+.icare-no-data strong {
+  display: block;
+
+  color: #475569;
+
+  font-size: 14px;
+}
+
+.icare-no-data p {
+  margin: 6px 0 0;
+
+  color: #94a3b8;
+
+  font-size: 11px;
+}
+
+
+/* =========================================================
+   ADD PATIENT POPUP / OVERLAY
+========================================================= */
+
+.add-patient-modal {
+  position: fixed;
+  inset: 0;
+
+  z-index: 99999;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 24px;
+
+  background: rgba(15, 23, 42, 0.58);
+
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+
+  box-sizing: border-box;
+
+  animation: modalOverlayIn 0.2s ease;
+}
+
+
+/* =========================================================
+   ACTUAL POPUP
+========================================================= */
+
+.add-patient-modal-content {
+  width: min(920px, 100%);
+
+  max-height: 92vh;
+
+  display: flex;
+  flex-direction: column;
+
+  background: #ffffff;
+
+  border: 1px solid #e2e8f0;
+  border-radius: 20px;
+
+  box-shadow:
+    0 25px 70px rgba(15, 23, 42, 0.28),
+    0 10px 30px rgba(15, 23, 42, 0.12);
+
+  overflow: hidden;
+
+  animation: modalContentIn 0.25s ease;
+}
+
+
+/* =========================================================
+   MODAL ANIMATION
+========================================================= */
+
+@keyframes modalOverlayIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes modalContentIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.97);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+
+/* =========================================================
+   MODAL HEADER
+========================================================= */
+
+.add-patient-header {
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 22px 26px;
+
+  border-bottom: 1px solid #e2e8f0;
+
+  background: #ffffff;
+}
+
+.add-patient-header h2 {
+  margin: 0;
+
+  color: #172b4d;
+
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.add-patient-header p {
+  margin: 5px 0 0;
+
+  color: #94a3b8;
+
+  font-size: 11px;
+}
+
+
+/* =========================================================
+   CLOSE BUTTON
+========================================================= */
+
+.add-patient-close {
+  width: 36px;
+  height: 36px;
+
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 0;
+
+  border: 1px solid #e2e8f0;
+  border-radius: 9px;
+
+  background: #f8fafc;
+  color: #64748b;
+
+  font-size: 22px;
+  line-height: 1;
+
+  cursor: pointer;
+
+  transition: all 0.2s ease;
+}
+
+.add-patient-close:hover {
+  background: #fef2f2;
+
+  border-color: #fecaca;
+
+  color: #dc2626;
+}
+
+
+/* =========================================================
+   FORM
+========================================================= */
+
+.add-patient-form {
+  flex: 1;
+
+  overflow-y: auto;
+
+  padding: 24px;
+
+  background: #f8fafc;
+
+  box-sizing: border-box;
+}
+
+
+/* =========================================================
+   FORM SECTION
+========================================================= */
+
+.add-patient-section {
+  margin-bottom: 18px;
+
+  padding: 20px;
+
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 2px 8px rgba(15, 23, 42, 0.03);
+}
+
+.add-patient-section:last-of-type {
+  margin-bottom: 0;
+}
+
+
+/* =========================================================
+   SECTION HEADER
+========================================================= */
+
+.add-patient-section-header {
+  display: flex;
+  align-items: center;
+
+  gap: 10px;
+
+  margin-bottom: 18px;
+  padding-bottom: 12px;
+
+  border-bottom: 1px solid #eef2f7;
+}
+
+.add-patient-section-number {
+  width: 30px;
+  height: 30px;
+
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 8px;
+
+  background: #eff6ff;
+  color: #2563eb;
+
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.add-patient-section-header h3 {
+  margin: 0;
+
+  color: #172b4d;
+
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.add-patient-section-header p {
+  margin: 3px 0 0;
+
+  color: #94a3b8;
+
+  font-size: 10px;
+}
+
+
+/* =========================================================
+   FORM GRID
+========================================================= */
+
+.add-patient-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+
+  gap: 16px;
+}
+
+
+/* =========================================================
+   FORM FIELD
+========================================================= */
+
+.add-patient-field {
+  min-width: 0;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 6px;
+}
+
+.add-patient-field.full-width {
+  grid-column: 1 / -1;
+}
+
+.add-patient-field label {
+  color: #334155;
+
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.add-patient-field label span {
+  margin-left: 3px;
+
+  color: #ef4444;
+}
+
+
+/* =========================================================
+   INPUT / SELECT / TEXTAREA
+========================================================= */
+
+.add-patient-field input,
+.add-patient-field select,
+.add-patient-field textarea {
+  width: 100%;
+
+  min-height: 40px;
+
+  padding: 9px 11px;
+
+  border: 1px solid #dbe3ec;
+  border-radius: 9px;
+
+  outline: none;
+
+  background: #ffffff;
+  color: #1e293b;
+
+  font-family: inherit;
+  font-size: 12px;
+
+  box-sizing: border-box;
+
+  transition:
+    border-color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.add-patient-field input:hover,
+.add-patient-field select:hover,
+.add-patient-field textarea:hover {
+  border-color: #bfdbfe;
+}
+
+.add-patient-field input:focus,
+.add-patient-field select:focus,
+.add-patient-field textarea:focus {
+  border-color: #3b82f6;
+
+  box-shadow:
+    0 0 0 3px rgba(59, 130, 246, 0.10);
+}
+
+.add-patient-field input::placeholder,
+.add-patient-field textarea::placeholder {
+  color: #a1aebe;
+}
+
+.add-patient-field textarea {
+  min-height: 85px;
+
+  resize: vertical;
+}
+
+.add-patient-field select {
+  cursor: pointer;
+}
+
+
+/* =========================================================
+   MODAL FOOTER
+========================================================= */
+
+.add-patient-footer {
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+
+  gap: 10px;
+
+  padding: 17px 26px;
+
+  border-top: 1px solid #e2e8f0;
+
+  background: #ffffff;
+}
+
+
+/* =========================================================
+   CANCEL
+========================================================= */
+
+.add-patient-cancel {
+  height: 38px;
+
+  padding: 0 17px;
+
+  border: 1px solid #dbe3ec;
+  border-radius: 9px;
+
+  background: #ffffff;
+  color: #64748b;
+
+  font-family: inherit;
+
+  font-size: 11px;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition: all 0.2s ease;
+}
+
+.add-patient-cancel:hover {
+  background: #f8fafc;
+
+  border-color: #cbd5e1;
+
+  color: #334155;
+}
+
+
+/* =========================================================
+   SAVE
+========================================================= */
+
+.add-patient-save {
+  height: 38px;
+
+  padding: 0 19px;
+
+  border: none;
+  border-radius: 9px;
+
+  background: #2563eb;
+  color: #ffffff;
+
+  font-family: inherit;
+
+  font-size: 11px;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  box-shadow:
+    0 4px 10px rgba(37, 99, 235, 0.18);
+
+  transition: all 0.2s ease;
+}
+
+.add-patient-save:hover {
+  background: #1d4ed8;
+
+  transform: translateY(-1px);
+
+  box-shadow:
+    0 7px 15px rgba(37, 99, 235, 0.25);
+}
+
+.add-patient-save:active {
+  transform: translateY(0);
+}
+
+
+/* =========================================================
+   MODAL SCROLLBAR
+========================================================= */
+
+.add-patient-form::-webkit-scrollbar {
+  width: 8px;
+}
+
+.add-patient-form::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+.add-patient-form::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+
+  border-radius: 10px;
+}
+
+.add-patient-form::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+
+/* =========================================================
+   RESPONSIVE — TABLET
+========================================================= */
+
+@media (max-width: 1200px) {
+
+  .icare-toolbar {
+    grid-template-columns:
+      minmax(250px, 1fr)
+      280px
+      repeat(2, minmax(130px, 1fr));
+  }
+
+  .icare-summary-grid {
+    grid-template-columns:
+      repeat(4, minmax(0, 1fr));
+  }
+
+}
+
+
+/* =========================================================
+   RESPONSIVE — SMALL TABLET
+========================================================= */
+
+@media (max-width: 800px) {
+
+  .icare-page {
+    padding: 18px;
+  }
+
+  .icare-title-area h1 {
+    font-size: 24px;
+  }
+
+  .icare-toolbar {
+    grid-template-columns: 1fr;
+  }
+
+  .icare-search-box {
+    grid-column: auto;
+  }
+
+  .icare-summary-grid {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+
+  .icare-table-title {
+    align-items: flex-start;
+
+    flex-direction: column;
+  }
+
+  .icare-table-actions {
+    width: 100%;
+
+    justify-content: flex-start;
+  }
+
+  .add-patient-modal {
+    padding: 12px;
+  }
+
+  .add-patient-modal-content {
+    max-height: 96vh;
+
+    border-radius: 15px;
+  }
+
+  .add-patient-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .add-patient-field.full-width {
+    grid-column: auto;
+  }
+
+  .add-patient-header {
+    padding: 18px;
+  }
+
+  .add-patient-form {
+    padding: 16px;
+  }
+
+  .add-patient-footer {
+    padding: 14px 18px;
+  }
+
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 500px) {
+
+  .icare-page {
+    padding: 12px;
+  }
+
+  .icare-title-area h1 {
+    font-size: 20px;
+  }
+
+  .icare-title-area p {
+    font-size: 12px;
+  }
+
+  .icare-summary-grid {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+
+    gap: 8px;
+  }
+
+  .icare-company-row {
+    gap: 6px;
+  }
+
+  .icare-company-row .icare-company-selector {
+    height: 52px;
+    min-height: 52px;
+    max-height: 52px;
+
+    padding: 6px 10px !important;
+  }
+
+  .icare-company-row .icare-add-company-button {
+    flex: 0 0 52px;
+
+    width: 52px;
+
+    height: 52px;
+    min-height: 52px;
+    max-height: 52px;
+
+    padding: 0 8px;
+
+    font-size: 9px;
+  }
+
+  .icare-company-row .icare-add-company-button span {
+    font-size: 14px;
+  }
+
+  .add-patient-section {
+    padding: 15px;
+  }
+
+  .add-patient-header h2 {
+    font-size: 17px;
+  }
+
+  .add-patient-footer {
+    flex-direction: column;
+  }
+
+  .add-patient-cancel,
+  .add-patient-save {
+    width: 100%;
+  }
+
+}
