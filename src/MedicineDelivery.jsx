@@ -5,20 +5,23 @@ import React, {
   useState,
 } from "react";
 
+import {
+  collection,
+  doc,
+  onSnapshot,
+  setDoc,
+} from "firebase/firestore";
+
+import db from "./firebase/firestore";
+
 import "./MedicineDelivery.css";
 
 /* =========================================================
-   STORAGE
+   FIRESTORE COLLECTIONS
 ========================================================= */
 
-const ICARE_STORAGE_KEY = "icarePatients";
-const TELECONSULT_STORAGE_KEY = "teleconsultExtraData";
-
-const DELIVERY_SYNC_EVENT =
-  "medicineDeliveryDataChanged";
-
-const TELECONSULT_SYNC_EVENT =
-  "teleconsultDataChanged";
+const ICARE_COLLECTION = "icarePatients";
+const TELECONSULT_COLLECTION = "teleconsultPatients";
 
 /* =========================================================
    HELPERS
@@ -207,7 +210,6 @@ const findTeleconsultExtra = (
 
   /* -------------------------------------------------------
      FALLBACK RECORD MATCH
-     Protects against slightly different IDs.
   ------------------------------------------------------- */
 
   const patientPhilHealth =
@@ -788,193 +790,116 @@ function MedicineDelivery() {
   ] = useState(false);
 
   /* =======================================================
-     LOAD ICARE
+     CUSTOM NOTIFICATION STATES
   ======================================================= */
 
-  const loadIcarePatients =
-    useCallback(() => {
-      try {
-        const saved =
-          localStorage.getItem(
-            ICARE_STORAGE_KEY
-          );
+  const [
+    deleteConfirmPatient,
+    setDeleteConfirmPatient,
+  ] = useState(null);
 
-        if (!saved) {
-          setIcarePatients([]);
-          return;
-        }
+  const [
+    notification,
+    setNotification,
+  ] = useState(null);
 
-        const parsed =
-          JSON.parse(saved);
-
-        if (
-          !Array.isArray(parsed)
-        ) {
-          setIcarePatients([]);
-          return;
-        }
-
-        setIcarePatients(parsed);
-      } catch (error) {
-        console.error(
-          "MedicineDelivery ICARE error:",
-          error
-        );
-
-        setIcarePatients([]);
-      }
-    }, []);
+  const [
+    deletingPatientId,
+    setDeletingPatientId,
+  ] = useState(null);
 
   /* =======================================================
-     LOAD TELECONSULT
+     FIRESTORE - LOAD ICARE
   ======================================================= */
 
-  const loadTeleconsultData =
-    useCallback(() => {
-      try {
-        const saved =
-          localStorage.getItem(
-            TELECONSULT_STORAGE_KEY
+  useEffect(() => {
+    const patientsRef =
+      collection(
+        db,
+        ICARE_COLLECTION
+      );
+
+    const unsubscribe =
+      onSnapshot(
+        patientsRef,
+        (snapshot) => {
+          const patients =
+            snapshot.docs.map(
+              (docSnapshot) => ({
+                id:
+                  docSnapshot.id,
+                ...docSnapshot.data(),
+              })
+            );
+
+          setIcarePatients(
+            patients
+          );
+        },
+        (error) => {
+          console.error(
+            "MedicineDelivery ICARE Firestore error:",
+            error
           );
 
-        if (!saved) {
+          setIcarePatients([]);
+        }
+      );
+
+    return () => {
+      unsubscribe();
+    };
+  }, []);
+
+  /* =======================================================
+     FIRESTORE - LOAD TELECONSULT
+  ======================================================= */
+
+  useEffect(() => {
+    const teleconsultRef =
+      collection(
+        db,
+        TELECONSULT_COLLECTION
+      );
+
+    const unsubscribe =
+      onSnapshot(
+        teleconsultRef,
+        (snapshot) => {
+          const data = {};
+
+          snapshot.docs.forEach(
+            (docSnapshot) => {
+              data[
+                docSnapshot.id
+              ] = {
+                id:
+                  docSnapshot.id,
+                ...docSnapshot.data(),
+              };
+            }
+          );
+
+          setTeleconsultExtraData(
+            data
+          );
+        },
+        (error) => {
+          console.error(
+            "MedicineDelivery Teleconsult Firestore error:",
+            error
+          );
+
           setTeleconsultExtraData(
             {}
           );
-          return;
         }
-
-        const parsed =
-          JSON.parse(saved);
-
-        if (
-          parsed &&
-          typeof parsed ===
-            "object" &&
-          !Array.isArray(parsed)
-        ) {
-          setTeleconsultExtraData(
-            parsed
-          );
-        } else {
-          setTeleconsultExtraData(
-            {}
-          );
-        }
-      } catch (error) {
-        console.error(
-          "MedicineDelivery Teleconsult error:",
-          error
-        );
-
-        setTeleconsultExtraData(
-          {}
-        );
-      }
-    }, []);
-
-  /* =======================================================
-     INITIAL LOAD
-  ======================================================= */
-
-  useEffect(() => {
-    loadIcarePatients();
-    loadTeleconsultData();
-  }, [
-    loadIcarePatients,
-    loadTeleconsultData,
-  ]);
-
-  /* =======================================================
-     SAME-TAB SYNC
-  ======================================================= */
-
-  useEffect(() => {
-    const handleSync = () => {
-      loadIcarePatients();
-      loadTeleconsultData();
-    };
-
-    window.addEventListener(
-      DELIVERY_SYNC_EVENT,
-      handleSync
-    );
-
-    window.addEventListener(
-      TELECONSULT_SYNC_EVENT,
-      handleSync
-    );
-
-    return () => {
-      window.removeEventListener(
-        DELIVERY_SYNC_EVENT,
-        handleSync
       );
 
-      window.removeEventListener(
-        TELECONSULT_SYNC_EVENT,
-        handleSync
-      );
-    };
-  }, [
-    loadIcarePatients,
-    loadTeleconsultData,
-  ]);
-
-  /* =======================================================
-     CROSS TAB SYNC
-  ======================================================= */
-
-  useEffect(() => {
-    const handleStorage = (
-      event
-    ) => {
-      if (
-        event.key ===
-          ICARE_STORAGE_KEY ||
-        event.key ===
-          TELECONSULT_STORAGE_KEY ||
-        event.key === null
-      ) {
-        loadIcarePatients();
-        loadTeleconsultData();
-      }
-    };
-
-    window.addEventListener(
-      "storage",
-      handleStorage
-    );
-
     return () => {
-      window.removeEventListener(
-        "storage",
-        handleStorage
-      );
+      unsubscribe();
     };
-  }, [
-    loadIcarePatients,
-    loadTeleconsultData,
-  ]);
-
-  /* =======================================================
-     BACKUP REFRESH
-  ======================================================= */
-
-  useEffect(() => {
-    const interval =
-      setInterval(() => {
-        loadIcarePatients();
-        loadTeleconsultData();
-      }, 1000);
-
-    return () => {
-      clearInterval(interval);
-    };
-  }, [
-    loadIcarePatients,
-    loadTeleconsultData,
-  ]);
+  }, []);
 
   /* =======================================================
      BUILD DELIVERY PATIENTS
@@ -1105,63 +1030,120 @@ function MedicineDelivery() {
             );
 
           /* -------------------------------------------------
-             MEDICINES
-          ------------------------------------------------- */
+   MEDICINES
+------------------------------------------------- */
 
-          let rawMedicines = [];
+let rawMedicines = [];
 
-          if (
-            Array.isArray(
-              matchedExtra.medicines
-            )
-          ) {
-            rawMedicines =
-              matchedExtra.medicines;
-          } else if (
-            matchedExtra.medicinesByMonth &&
-            typeof
-              matchedExtra.medicinesByMonth ===
-                "object"
-          ) {
-            rawMedicines =
-              Object.values(
-                matchedExtra.medicinesByMonth
-              ).flatMap(
-                (items) =>
-                  Array.isArray(items)
-                    ? items
-                    : []
-              );
-          }
+if (
+  Array.isArray(
+    matchedExtra.medicines
+  )
+) {
+  rawMedicines =
+    matchedExtra.medicines.map(
+      (medicine) => ({
+        ...medicine,
 
-          const medicines =
-            rawMedicines.map(
-              (
-                medicine,
-                index
-              ) => ({
-                ...medicine,
+        prescribedMonth:
+          medicine?.prescribedMonth ||
+          medicine?.month ||
+          "",
+      })
+    );
+} else if (
+  matchedExtra.medicinesByMonth &&
+  typeof matchedExtra.medicinesByMonth ===
+    "object"
+) {
+  rawMedicines = Object.entries(
+    matchedExtra.medicinesByMonth
+  ).flatMap(
+    ([month, items]) =>
+      Array.isArray(items)
+        ? items.map(
+            (medicine) => ({
+              ...medicine,
 
-                id:
-                  getMedicineId(
-                    stableId,
-                    medicine,
-                    index
-                  ),
+              /*
+               * IMPORTANT:
+               * Preserve the month where
+               * this medicine was prescribed.
+               */
+              prescribedMonth:
+                medicine?.prescribedMonth ||
+                medicine?.month ||
+                month,
+            })
+          )
+        : []
+  );
+}
 
-                medicine:
-                  getMedicineName(
-                    medicine
-                  ),
+const medicines =
+  rawMedicines.map(
+    (
+      medicine,
+      index
+    ) => ({
+      ...medicine,
 
-                quantity:
-                  Number(
-                    medicine?.quantity ??
-                      medicine?.qty ??
-                      0
-                  ),
-              })
-            );
+      id:
+        getMedicineId(
+          stableId,
+          medicine,
+          index
+        ),
+
+      medicine:
+        getMedicineName(
+          medicine
+        ),
+
+      quantity:
+        Number(
+          medicine?.quantity ??
+            medicine?.qty ??
+            0
+        ),
+
+      prescribedMonth:
+        medicine?.prescribedMonth ||
+        medicine?.month ||
+        "",
+    })
+  );
+
+/*
+ * GROUP MEDICINES BY PRESCRIBED MONTH
+ *
+ * Same month = one group.
+ * Different month = separate group.
+ */
+const medicinesByPrescribedMonth =
+  medicines.reduce(
+    (
+      groups,
+      medicine
+    ) => {
+      const month =
+        medicine.prescribedMonth ||
+        "Unspecified Month";
+
+      if (
+        !groups[month]
+      ) {
+        groups[month] = [];
+      }
+
+      groups[month].push(
+        medicine
+      );
+
+      return groups;
+    },
+    {}
+  );
 
           /* -------------------------------------------------
              ADDRESS
@@ -1269,7 +1251,9 @@ function MedicineDelivery() {
 
             medicines,
 
-            monthlyDeliveries,
+medicinesByPrescribedMonth,
+
+monthlyDeliveries,
           };
 
           patient.nextDelivery =
@@ -1635,7 +1619,7 @@ function MedicineDelivery() {
     );
 
   /* =======================================================
-     SAVE CHANGES
+     SAVE CHANGES TO FIRESTORE
   ======================================================= */
 
   const handleSaveChanges =
@@ -1650,43 +1634,45 @@ function MedicineDelivery() {
       setIsSaving(true);
 
       try {
-        const saved =
-          localStorage.getItem(
-            TELECONSULT_STORAGE_KEY
+        const patientId =
+          String(
+            viewingPatient.id
           );
 
-        let existingData = {};
+        /*
+         * Get the current Firestore
+         * Teleconsult record.
+         */
+        const current = {
+          ...(
+            teleconsultExtraData[
+              patientId
+            ] || {}
+          ),
+        };
 
-        if (saved) {
-          try {
-            const parsed =
-              JSON.parse(saved);
+        /*
+         * Fallback in case the exact
+         * document key uses a different
+         * capitalization/format.
+         */
+        if (
+          Object.keys(current)
+            .length === 0
+        ) {
+          const matchedExtra =
+            findTeleconsultExtra(
+              viewingPatient,
+              teleconsultExtraData
+            );
 
-            if (
-              parsed &&
-              typeof parsed ===
-                "object" &&
-              !Array.isArray(parsed)
-            ) {
-              existingData = parsed;
-            }
-          } catch (error) {
-            console.error(
-              "Error parsing teleconsult data:",
-              error
+          if (matchedExtra) {
+            Object.assign(
+              current,
+              matchedExtra
             );
           }
         }
-
-        const updatedData = {
-          ...existingData,
-        };
-
-        const current = {
-          ...(updatedData[
-            viewingPatient.id
-          ] || {}),
-        };
 
         const {
           field: deliveryField,
@@ -1765,6 +1751,10 @@ function MedicineDelivery() {
           }
         );
 
+        /*
+         * Preserve the original
+         * endorsement.
+         */
         current[
           deliveryField
         ] = updatedDeliveries;
@@ -1776,12 +1766,10 @@ function MedicineDelivery() {
           editingAddress;
 
         /*
-         * IMPORTANT:
-         * Preserve the endorsement.
-         *
-         * MedicineDelivery itself should
-         * never accidentally change
-         * medicineDelivery from Yes to No.
+         * Medicine Delivery itself
+         * must never accidentally
+         * change endorsement from
+         * Yes to No.
          */
         if (
           current.medicineDelivery ===
@@ -1791,35 +1779,38 @@ function MedicineDelivery() {
             "Yes";
         }
 
-        updatedData[
-          viewingPatient.id
-        ] = current;
+        /*
+         * Keep the document ID
+         * aligned with the ICARE
+         * patient ID.
+         */
+        current.id =
+          patientId;
 
-        localStorage.setItem(
-          TELECONSULT_STORAGE_KEY,
-          JSON.stringify(
-            updatedData
-          )
-        );
+        current.updatedAt =
+          new Date().toISOString();
 
-        setTeleconsultExtraData(
-          updatedData
+        /*
+         * Save directly to:
+         *
+         * teleconsultPatients/{patientId}
+         */
+        await setDoc(
+          doc(
+            db,
+            TELECONSULT_COLLECTION,
+            patientId
+          ),
+          current,
+          {
+            merge: true,
+          }
         );
 
         /*
-         * Notify both components.
+         * onSnapshot() will update
+         * teleconsultExtraData automatically.
          */
-        window.dispatchEvent(
-          new Event(
-            DELIVERY_SYNC_EVENT
-          )
-        );
-
-        window.dispatchEvent(
-          new Event(
-            TELECONSULT_SYNC_EVENT
-          )
-        );
 
         setModalMode("view");
 
@@ -1836,13 +1827,18 @@ function MedicineDelivery() {
         );
       } catch (error) {
         console.error(
-          "MedicineDelivery save changes error:",
+          "MedicineDelivery Firestore save error:",
           error
         );
 
-        alert(
-          "Unable to save changes. Please try again."
-        );
+        setNotification({
+          type: "error",
+          title:
+            "Unable to Save Changes",
+          message:
+            error?.message ||
+            "Something went wrong. Please try again.",
+        });
       } finally {
         setIsSaving(false);
       }
@@ -1851,6 +1847,7 @@ function MedicineDelivery() {
       modalMode,
       editingDeliveries,
       editingAddress,
+      teleconsultExtraData,
     ]);
 
   /* =======================================================
@@ -1864,6 +1861,189 @@ function MedicineDelivery() {
       setEditingDeliveries([]);
       setEditingAddress("");
     }, []);
+
+  /* =======================================================
+     OPEN DELETE CONFIRMATION
+  ======================================================= */
+
+  const handleDeletePatient =
+    useCallback(
+      (patient) => {
+        if (!patient) {
+          return;
+        }
+
+        setDeleteConfirmPatient(
+          patient
+        );
+      },
+      []
+    );
+
+  /* =======================================================
+     CONFIRM DELETE MEDICINE DELIVERY
+  ======================================================= */
+
+  const confirmDeletePatient =
+    useCallback(async () => {
+      if (!deleteConfirmPatient) {
+        return;
+      }
+
+      const patient =
+        deleteConfirmPatient;
+
+      const fullName = [
+        patient.lastName,
+        patient.firstName,
+        patient.middleName,
+      ]
+        .filter(Boolean)
+        .join(", ");
+
+      const patientId =
+        String(patient.id);
+
+      setDeletingPatientId(
+        patientId
+      );
+
+      try {
+        /*
+         * Find the actual Teleconsult record.
+         */
+        let matchedExtra =
+          teleconsultExtraData[
+            patientId
+          ];
+
+        if (!matchedExtra) {
+          matchedExtra =
+            findTeleconsultExtra(
+              patient,
+              teleconsultExtraData
+            );
+        }
+
+        if (!matchedExtra) {
+          throw new Error(
+            "Unable to find the patient's Teleconsult record."
+          );
+        }
+
+        /*
+         * Use the actual Firestore document ID.
+         */
+        const teleconsultDocumentId =
+          matchedExtra.id ||
+          patientId;
+
+        /*
+         * IMPORTANT:
+         *
+         * Only remove Medicine Delivery
+         * endorsement.
+         *
+         * Do NOT delete the entire
+         * Teleconsult document.
+         */
+        await setDoc(
+          doc(
+            db,
+            TELECONSULT_COLLECTION,
+            String(
+              teleconsultDocumentId
+            )
+          ),
+          {
+            medicineDelivery:
+              "No",
+            updatedAt:
+              new Date().toISOString(),
+          },
+          {
+            merge: true,
+          }
+        );
+
+        /*
+         * Close confirmation.
+         */
+        setDeleteConfirmPatient(
+          null
+        );
+
+        /*
+         * Close current patient modal
+         * if this is the same patient.
+         */
+        if (
+          viewingPatientId ===
+          patient.id
+        ) {
+          closeModal();
+        }
+
+        /*
+         * Success notification.
+         */
+        setNotification({
+          type: "success",
+          title:
+            "Patient Removed",
+          message: `${
+            fullName ||
+            "Patient"
+          } has been removed from Medicine Delivery.`,
+        });
+      } catch (error) {
+        console.error(
+          "MedicineDelivery delete error:",
+          error
+        );
+
+        setDeleteConfirmPatient(
+          null
+        );
+
+        setNotification({
+          type: "error",
+          title:
+            "Unable to Remove Patient",
+          message:
+            error?.message ||
+            "Something went wrong. Please try again.",
+        });
+      } finally {
+        setDeletingPatientId(
+          null
+        );
+      }
+    }, [
+      deleteConfirmPatient,
+      teleconsultExtraData,
+      viewingPatientId,
+      closeModal,
+    ]);
+
+  /* =======================================================
+     AUTO CLOSE NOTIFICATION
+  ======================================================= */
+
+  useEffect(() => {
+    if (!notification) {
+      return;
+    }
+
+    const timer =
+      setTimeout(() => {
+        setNotification(null);
+      }, 3500);
+
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [notification]);
 
   /* =======================================================
      CLOSE IF PATIENT DISAPPEARS
@@ -2138,6 +2318,10 @@ function MedicineDelivery() {
                         patient
                       );
 
+                    const isDeleting =
+                      deletingPatientId ===
+                      String(patient.id);
+
                     return (
                       <tr
                         key={
@@ -2309,6 +2493,23 @@ function MedicineDelivery() {
                               }
                             >
                               ✎ Edit
+                            </button>
+
+                            <button
+                              type="button"
+                              className="delivery-delete-btn"
+                              onClick={() =>
+                                handleDeletePatient(
+                                  patient
+                                )
+                              }
+                              disabled={
+                                isDeleting
+                              }
+                            >
+                              {isDeleting
+                                ? "Removing..."
+                                : "🗑 Delete"}
                             </button>
 
                           </div>
@@ -2635,61 +2836,103 @@ function MedicineDelivery() {
 
                 </div>
 
-                {viewingPatient
-                  .medicines
-                  ?.length >
-                0 ? (
-                  <div className="delivery-medicine-list">
+               {viewingPatient.medicines?.length > 0 ? (
+  <div className="delivery-medicine-list">
 
-                    {viewingPatient.medicines.map(
-                      (
-                        medicine,
-                        index
-                      ) => (
-                        <div
-                          className="delivery-medicine-card"
-                          key={
-                            medicine.id ||
-                            index
-                          }
-                        >
+    {Object.entries(
+      viewingPatient.medicinesByPrescribedMonth || {}
+    ).map(
+      ([month, medicines]) => (
+        <div
+          className="delivery-medicine-month-group"
+          key={month}
+        >
 
-                          <div className="medicine-number">
-                            {index + 1}
-                          </div>
+          {/* MONTH HEADER */}
 
-                          <div className="medicine-icon">
-                            💊
-                          </div>
+          <div className="delivery-medicine-month-header">
 
-                          <div className="medicine-info">
+            <div>
 
-                            <strong>
-                              {
-                                medicine.medicine
-                              }
-                            </strong>
+              <strong
+  className="prescribed-month-text"
+  style={{ color: "#ffffff" }}
+>
+  {month}
+</strong>
 
-                            <span>
-                              Quantity:{" "}
-                              {
-                                medicine.quantity
-                              }
-                            </span>
+              <span>
+              
+              </span>
 
-                          </div>
+            </div>
 
-                        </div>
-                      )
-                    )}
+            <div className="delivery-pill">
+              💊{" "}
+              {medicines.length}{" "}
+              {medicines.length === 1
+                ? "Medicine"
+                : "Medicines"}
+            </div>
+
+          </div>
+
+          {/* MEDICINES UNDER THIS MONTH */}
+
+          <div className="delivery-medicine-month-list">
+
+            {medicines.map(
+              (
+                medicine,
+                index
+              ) => (
+                <div
+                  className="delivery-medicine-card"
+                  key={
+                    medicine.id ||
+                    `${month}-${index}`
+                  }
+                >
+
+                  <div className="medicine-number">
+                    {index + 1}
+                  </div>
+
+                  <div className="medicine-icon">
+                    💊
+                  </div>
+
+                  <div className="medicine-info">
+
+                    <strong>
+                      {medicine.medicine ||
+                        "—"}
+                    </strong>
+
+                    <span>
+                      Quantity:{" "}
+                      {medicine.quantity ||
+                        "—"}
+                    </span>
 
                   </div>
-                ) : (
-                  <div className="delivery-no-data">
-                    No medicines
-                    prescribed.
-                  </div>
-                )}
+
+                </div>
+              )
+            )}
+
+          </div>
+
+        </div>
+      )
+    )}
+
+  </div>
+) : (
+  <div className="delivery-no-data">
+    No medicines prescribed.
+  </div>
+)}
 
               </section>
 
@@ -3025,6 +3268,171 @@ function MedicineDelivery() {
 
         </div>
       )}
+
+      {/* =====================================================
+          DELETE CONFIRMATION POPUP
+      ===================================================== */}
+
+      {deleteConfirmPatient && (
+        <div
+          className="medicine-delivery-notification-overlay"
+          onClick={() => {
+            if (!deletingPatientId) {
+              setDeleteConfirmPatient(
+                null
+              );
+            }
+          }}
+        >
+
+          <div
+            className="medicine-delivery-confirm-modal"
+            onClick={(event) =>
+              event.stopPropagation()
+            }
+          >
+
+            <div className="medicine-delivery-confirm-icon">
+              🗑
+            </div>
+
+            <h2>
+              Remove Patient?
+            </h2>
+
+            <p className="confirm-patient-name">
+              {[
+                deleteConfirmPatient.lastName,
+                deleteConfirmPatient.firstName,
+                deleteConfirmPatient.middleName,
+              ]
+                .filter(Boolean)
+                .join(", ") ||
+                "This patient"}
+            </p>
+
+            <p className="confirm-description">
+              Are you sure you want to remove
+              this patient from Medicine
+              Delivery?
+            </p>
+
+            <div className="confirm-warning-box">
+
+              <span>
+                i
+              </span>
+
+              <p>
+                Only the Medicine Delivery
+                endorsement will be removed.
+                The patient's ICARE and
+                Teleconsult records will
+                <strong>
+                  {" "}NOT{" "}
+                </strong>
+                be deleted.
+              </p>
+
+            </div>
+
+            <div className="medicine-delivery-confirm-actions">
+
+              <button
+                type="button"
+                className="delivery-confirm-cancel"
+                onClick={() =>
+                  setDeleteConfirmPatient(
+                    null
+                  )
+                }
+                disabled={
+                  !!deletingPatientId
+                }
+              >
+                Cancel
+              </button>
+
+              <button
+                type="button"
+                className="delivery-confirm-delete"
+                onClick={
+                  confirmDeletePatient
+                }
+                disabled={
+                  !!deletingPatientId
+                }
+              >
+                {deletingPatientId
+                  ? "Removing..."
+                  : "🗑 Remove Patient"}
+              </button>
+
+            </div>
+
+          </div>
+
+        </div>
+      )}
+
+      {/* =====================================================
+    ADVANCED SUCCESS / ERROR TOAST
+===================================================== */}
+
+{notification && (
+  <div
+    className={`medicine-delivery-toast ${notification.type}`}
+    role="alert"
+    aria-live="assertive"
+  >
+
+    {/* ICON */}
+    <div className="medicine-delivery-toast-icon-wrap">
+      <div className="medicine-delivery-toast-icon">
+        {notification.type === "success" ? "✓" : "!"}
+      </div>
+    </div>
+
+    {/* CONTENT */}
+    <div className="medicine-delivery-toast-content">
+
+      <div className="medicine-delivery-toast-title-row">
+        <strong>
+          {notification.title}
+        </strong>
+
+        <span className="medicine-delivery-toast-status">
+          {notification.type === "success"
+            ? "SUCCESS"
+            : "ERROR"}
+        </span>
+      </div>
+
+      <p>
+        {notification.message}
+      </p>
+
+    </div>
+
+    {/* CLOSE */}
+    <button
+      type="button"
+      className="medicine-delivery-toast-close"
+      onClick={() =>
+        setNotification(null)
+      }
+      aria-label="Close notification"
+    >
+      ×
+    </button>
+
+    {/* PROGRESS */}
+    <div className="medicine-delivery-toast-progress">
+      <div />
+    </div>
+
+  </div>
+)}
 
     </div>
   );

@@ -1,16 +1,19 @@
 import React, { useEffect, useMemo, useState } from "react";
+import {
+  collection,
+  deleteDoc,
+  doc,
+  onSnapshot,
+  setDoc,
+} from "firebase/firestore";
+import db from "./firebase/firestore";
 import "./Teleconsult.css";
 
 /* =========================================================
    STORAGE
+   Medicine month UI settings are stored in Firestore.
+   Patient / Teleconsult / Company business data are Firestore.
 ========================================================= */
-
-const TELECONSULT_STORAGE_KEY = "teleconsultExtraData";
-const ICARE_STORAGE_KEY = "icarePatients";
-const MEDICINE_MONTHS_STORAGE_KEY = "teleconsultMedicineMonths";
-const COMPANY_STORAGE_KEY = "yakapCompanies";
-const TELECONSULT_SYNC_EVENT = "teleconsultDataChanged";
-const MEDICINE_DELIVERY_SYNC_EVENT = "medicineDeliveryDataChanged";
 
 /* =========================================================
    CONSTANTS
@@ -25,7 +28,7 @@ const DEFAULT_MEDICINE_MONTHS = [
 
 const TELECONSULT_STATUSES = [
   "Call Done",
-  "Not Available",
+  "--",
 ];
 
 const DELIVERY_STATUSES = [
@@ -169,7 +172,10 @@ const MEDICINE_LIST = [
 const getIcareValue = (record, key) => {
   if (!record) return "";
 
-  if (record[key] !== undefined && record[key] !== null) {
+  if (
+    record[key] !== undefined &&
+    record[key] !== null
+  ) {
     return record[key];
   }
 
@@ -191,8 +197,11 @@ const createId = (prefix) =>
     .toString(36)
     .slice(2, 9)}`;
 
-const createMedicineId = () => createId("medicine");
-const createDeliveryId = () => createId("delivery");
+const createMedicineId = () =>
+  createId("medicine");
+
+const createDeliveryId = () =>
+  createId("delivery");
 
 const normalizeMonthName = (value) =>
   String(value || "")
@@ -209,7 +218,9 @@ const parseLocalDate = (value) => {
 
   const date = new Date(`${value}T00:00:00`);
 
-  return Number.isNaN(date.getTime()) ? null : date;
+  return Number.isNaN(date.getTime())
+    ? null
+    : date;
 };
 
 const formatDate = (value) => {
@@ -234,8 +245,14 @@ const addMonths = (dateString, months) => {
   date.setMonth(date.getMonth() + months);
 
   const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
+
+  const month = String(
+    date.getMonth() + 1
+  ).padStart(2, "0");
+
+  const day = String(
+    date.getDate()
+  ).padStart(2, "0");
 
   return `${year}-${month}-${day}`;
 };
@@ -243,23 +260,32 @@ const addMonths = (dateString, months) => {
 const getNextMonthName = (monthName) => {
   if (!monthName) return "";
 
-  const normalized = normalizeMonthName(monthName);
-  const date = new Date(`${normalized} 1`);
+  const normalized =
+    normalizeMonthName(monthName);
 
-  if (Number.isNaN(date.getTime())) return "";
+  const date = new Date(
+    `${normalized} 1`
+  );
+
+  if (Number.isNaN(date.getTime())) {
+    return "";
+  }
 
   date.setMonth(date.getMonth() + 1);
 
-  return date
-    .toLocaleDateString("en-US", {
+  return date.toLocaleDateString(
+    "en-US",
+    {
       month: "long",
       year: "numeric",
-    })
-    .toUpperCase();
+    }
+  ).toUpperCase();
 };
 
 const normalizeMedicineList = (medicines) => {
-  if (!Array.isArray(medicines)) return [];
+  if (!Array.isArray(medicines)) {
+    return [];
+  }
 
   return medicines
     .filter(
@@ -269,9 +295,18 @@ const normalizeMedicineList = (medicines) => {
         Number(medicine.quantity) > 0
     )
     .map((medicine) => ({
-      id: medicine.id || createMedicineId(),
-      medicine: String(medicine.medicine || ""),
-      quantity: Number(medicine.quantity) || 0,
+      id:
+        medicine.id ||
+        createMedicineId(),
+
+      medicine: String(
+        medicine.medicine || ""
+      ),
+
+      quantity:
+        Number(
+          medicine.quantity
+        ) || 0,
     }));
 };
 
@@ -285,33 +320,57 @@ const normalizeMedicinesByMonth = (
   months
 ) => {
   const result = {};
-  const availableMonths = Array.isArray(months) ? months : [];
 
-  availableMonths.forEach((month) => {
-    result[month] = normalizeMedicineList(
-      medicinesByMonth?.[month]
-    );
-  });
+  const availableMonths =
+    Array.isArray(months)
+      ? months
+      : [];
+
+  availableMonths.forEach(
+    (month) => {
+      result[month] =
+        normalizeMedicineList(
+          medicinesByMonth?.[month]
+        );
+    }
+  );
 
   const hasSavedMonthData =
     medicinesByMonth &&
     typeof medicinesByMonth === "object" &&
-    Object.keys(medicinesByMonth).length > 0;
+    Object.keys(
+      medicinesByMonth
+    ).length > 0;
 
-  if (!hasSavedMonthData && availableMonths.length > 0) {
-    result[availableMonths[0]] =
-      normalizeMedicineList(oldMedicines);
+  if (
+    !hasSavedMonthData &&
+    availableMonths.length > 0
+  ) {
+    result[
+      availableMonths[0]
+    ] =
+      normalizeMedicineList(
+        oldMedicines
+      );
   }
 
   if (
     medicinesByMonth &&
     typeof medicinesByMonth === "object"
   ) {
-    Object.keys(medicinesByMonth).forEach((month) => {
-      if (!Object.prototype.hasOwnProperty.call(result, month)) {
-        result[month] = normalizeMedicineList(
-          medicinesByMonth[month]
-        );
+    Object.keys(
+      medicinesByMonth
+    ).forEach((month) => {
+      if (
+        !Object.prototype.hasOwnProperty.call(
+          result,
+          month
+        )
+      ) {
+        result[month] =
+          normalizeMedicineList(
+            medicinesByMonth[month]
+          );
       }
     });
   }
@@ -336,40 +395,50 @@ const generateMonthlyDeliveries = (
     return [];
   }
 
-  const existing = Array.isArray(existingDeliveries)
-    ? existingDeliveries
-    : [];
+  const existing =
+    Array.isArray(existingDeliveries)
+      ? existingDeliveries
+      : [];
 
-  return months.map((month, index) => {
-    const existingDelivery =
-      existing.find((item) => item?.month === month) ||
-      existing[index];
+  return months.map(
+    (month, index) => {
+      const existingDelivery =
+        existing.find(
+          (item) =>
+            item?.month === month
+        ) ||
+        existing[index];
 
-    return {
-      id:
-        existingDelivery?.id ||
-        createDeliveryId(),
+      return {
+        id:
+          existingDelivery?.id ||
+          createDeliveryId(),
 
-      month,
+        month,
 
-      scheduledDate:
-        index === 0
-          ? firstDeliveryDate
-          : addMonths(firstDeliveryDate, index),
+        scheduledDate:
+          index === 0
+            ? firstDeliveryDate
+            : addMonths(
+                firstDeliveryDate,
+                index
+              ),
 
-      status:
-        existingDelivery?.status ||
-        "Pending",
+        status:
+          existingDelivery?.status ||
+          "Pending",
 
-      date:
-        existingDelivery?.date ||
-        "",
+        date:
+          existingDelivery?.date ||
+          "",
 
-      medicines: normalizeMedicineList(
-        existingDelivery?.medicines
-      ),
-    };
-  });
+        medicines:
+          normalizeMedicineList(
+            existingDelivery?.medicines
+          ),
+      };
+    }
+  );
 };
 
 const normalizeMonthlyDeliveries = (
@@ -378,65 +447,80 @@ const normalizeMonthlyDeliveries = (
   subsequentDeliveries = [],
   months = []
 ) => {
-  if (!Array.isArray(months) || months.length === 0) {
+  if (
+    !Array.isArray(months) ||
+    months.length === 0
+  ) {
     return [];
   }
 
-  const existing = Array.isArray(monthlyDeliveries)
-    ? monthlyDeliveries
-    : [];
+  const existing =
+    Array.isArray(monthlyDeliveries)
+      ? monthlyDeliveries
+      : [];
 
-  return months.map((month, index) => {
-    const existingDelivery =
-      existing.find((item) => item?.month === month) ||
-      existing[index];
+  return months.map(
+    (month, index) => {
+      const existingDelivery =
+        existing.find(
+          (item) =>
+            item?.month === month
+        ) ||
+        existing[index];
 
-    let scheduledDate =
-      existingDelivery?.scheduledDate || "";
+      let scheduledDate =
+        existingDelivery?.scheduledDate ||
+        "";
 
-    if (!scheduledDate) {
-      if (index === 0) {
-        scheduledDate =
-          firstDelivery?.scheduledDate ||
-          firstDelivery?.date ||
-          firstDelivery ||
-          "";
-      } else {
-        const subsequent =
-          Array.isArray(subsequentDeliveries)
-            ? subsequentDeliveries[index - 1]
-            : null;
+      if (!scheduledDate) {
+        if (index === 0) {
+          scheduledDate =
+            firstDelivery?.scheduledDate ||
+            firstDelivery?.date ||
+            firstDelivery ||
+            "";
+        } else {
+          const subsequent =
+            Array.isArray(
+              subsequentDeliveries
+            )
+              ? subsequentDeliveries[
+                  index - 1
+                ]
+              : null;
 
-        scheduledDate =
-          subsequent?.scheduledDate ||
-          subsequent?.date ||
-          subsequent ||
-          "";
+          scheduledDate =
+            subsequent?.scheduledDate ||
+            subsequent?.date ||
+            subsequent ||
+            "";
+        }
       }
+
+      return {
+        id:
+          existingDelivery?.id ||
+          createDeliveryId(),
+
+        month,
+
+        scheduledDate,
+
+        status:
+          existingDelivery?.status ||
+          "Pending",
+
+        date:
+          existingDelivery?.date ||
+          "",
+
+        medicines:
+          normalizeMedicineList(
+            existingDelivery?.medicines
+          ),
+      };
     }
-
-    return {
-      id:
-        existingDelivery?.id ||
-        createDeliveryId(),
-
-      month,
-
-      scheduledDate,
-
-      status:
-        existingDelivery?.status ||
-        "Pending",
-
-      date:
-        existingDelivery?.date ||
-        "",
-
-      medicines: normalizeMedicineList(
-        existingDelivery?.medicines
-      ),
-    };
-  });
+  );
 };
 
 /* =========================================================
@@ -444,122 +528,114 @@ const normalizeMonthlyDeliveries = (
 ========================================================= */
 
 function Teleconsult() {
-  const [icareCompletedPatients, setIcareCompletedPatients] =
-    useState([]);
+  const [
+    icareCompletedPatients,
+    setIcareCompletedPatients,
+  ] = useState([]);
 
-  const [teleconsultExtraData, setTeleconsultExtraData] =
-    useState(() => {
-      try {
-        const saved = localStorage.getItem(
-          TELECONSULT_STORAGE_KEY
-        );
+  const [
+    teleconsultExtraData,
+    setTeleconsultExtraData,
+  ] = useState({});
 
-        return saved ? JSON.parse(saved) : {};
-      } catch (error) {
-        console.error(
-          "Error loading Teleconsult data:",
-          error
-        );
-        return {};
-      }
-    });
-
-  const [medicineMonths, setMedicineMonths] = useState(() => {
-    try {
-      const saved = localStorage.getItem(
-        MEDICINE_MONTHS_STORAGE_KEY
-      );
-
-      if (saved) {
-        const parsed = JSON.parse(saved);
-
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          return parsed.map(normalizeMonthName);
-        }
-      }
-    } catch (error) {
-      console.error(
-        "Error loading medicine months:",
-        error
-      );
-    }
-
-    return DEFAULT_MEDICINE_MONTHS;
-  });
+  const [
+    medicineMonths,
+    setMedicineMonths,
+  ] = useState(
+    DEFAULT_MEDICINE_MONTHS
+  );
 
   /* =======================================================
      COMPANY STATE
   ======================================================= */
 
-  const [companies, setCompanies] = useState(() => {
-    try {
-      const saved = localStorage.getItem(
-        COMPANY_STORAGE_KEY
-      );
+  const [
+    companies,
+    setCompanies,
+  ] = useState([]);
 
-      if (saved) {
-        const parsed = JSON.parse(saved);
+  const [
+    selectedCompany,
+    setSelectedCompany,
+  ] = useState(
+    "All Companies"
+  );
 
-        if (Array.isArray(parsed)) {
-          return parsed
-            .map(normalizeCompanyName)
-            .filter(Boolean);
-        }
-      }
-    } catch (error) {
-      console.error(
-        "Error loading companies:",
-        error
-      );
-    }
+  const [
+    showCompanyModal,
+    setShowCompanyModal,
+  ] = useState(false);
 
-    return [];
-  });
+  const [
+    newCompanyName,
+    setNewCompanyName,
+  ] = useState("");
 
-  const [selectedCompany, setSelectedCompany] =
-    useState("All Companies");
-
-  const [showCompanyModal, setShowCompanyModal] =
-    useState(false);
-
-  const [newCompanyName, setNewCompanyName] =
-    useState("");
-
-  const [companyError, setCompanyError] =
-    useState("");
+  const [
+    companyError,
+    setCompanyError,
+  ] = useState("");
 
   /* =======================================================
      OTHER STATE
   ======================================================= */
 
-  const [searchTerm, setSearchTerm] = useState("");
+  const [
+    searchTerm,
+    setSearchTerm,
+  ] = useState("");
 
-  const [showPatientModal, setShowPatientModal] =
-    useState(false);
+  const [
+    showPatientModal,
+    setShowPatientModal,
+  ] = useState(false);
 
-  const [editingPatient, setEditingPatient] =
-    useState(null);
+  const [
+    editingPatient,
+    setEditingPatient,
+  ] = useState(null);
 
-  const [viewingPatient, setViewingPatient] =
-    useState(null);
+  const [
+    viewingPatient,
+    setViewingPatient,
+  ] = useState(null);
 
-  const [newPatient, setNewPatient] =
-    useState(emptyPatient);
+  const [
+    newPatient,
+    setNewPatient,
+  ] = useState(
+    emptyPatient
+  );
 
-  const [medicineSearch, setMedicineSearch] =
-    useState("");
+  const [
+    medicineSearch,
+    setMedicineSearch,
+  ] = useState("");
 
-  const [selectedMedicine, setSelectedMedicine] =
-    useState("");
+  const [
+    selectedMedicine,
+    setSelectedMedicine,
+  ] = useState("");
 
-  const [medicineQty, setMedicineQty] =
-    useState("");
+  const [
+    medicineQty,
+    setMedicineQty,
+  ] = useState("");
 
-  const [showMedicineDropdown, setShowMedicineDropdown] =
-    useState(false);
+  const [
+    showMedicineDropdown,
+    setShowMedicineDropdown,
+  ] = useState(false);
 
-  const [activeMedicineMonth, setActiveMedicineMonth] =
-    useState("");
+  const [
+    activeMedicineMonth,
+    setActiveMedicineMonth,
+  ] = useState("");
+
+  const [
+    isSaving,
+    setIsSaving,
+  ] = useState(false);
 
   /* =======================================================
      ACTIVE MONTH
@@ -571,734 +647,944 @@ function Teleconsult() {
       return;
     }
 
-    setActiveMedicineMonth((current) =>
-      medicineMonths.includes(current)
-        ? current
-        : medicineMonths[0]
+    setActiveMedicineMonth(
+      (current) =>
+        medicineMonths.includes(current)
+          ? current
+          : medicineMonths[0]
     );
   }, [medicineMonths]);
 
   /* =======================================================
-     SAVE MONTH SETTINGS
+     LOAD MEDICINE MONTH SETTINGS FROM FIRESTORE
   ======================================================= */
 
   useEffect(() => {
-    try {
-      localStorage.setItem(
-        MEDICINE_MONTHS_STORAGE_KEY,
-        JSON.stringify(medicineMonths)
-      );
-    } catch (error) {
-      console.error(
-        "Error saving medicine months:",
-        error
-      );
-    }
-  }, [medicineMonths]);
-
-  /* =======================================================
-     SAVE COMPANIES
-  ======================================================= */
-
-  useEffect(() => {
-    try {
-      localStorage.setItem(
-        COMPANY_STORAGE_KEY,
-        JSON.stringify(companies)
-      );
-    } catch (error) {
-      console.error(
-        "Error saving companies:",
-        error
-      );
-    }
-  }, [companies]);
-
-  /* =======================================================
-     LOAD ICARE
-  ======================================================= */
-
-  const loadCompletedIcarePatients = () => {
-    try {
-      const saved =
-        localStorage.getItem(ICARE_STORAGE_KEY);
-
-      if (!saved) {
-        setIcareCompletedPatients([]);
-        return;
-      }
-
-      const parsed = JSON.parse(saved);
-
-      if (!Array.isArray(parsed)) {
-        setIcareCompletedPatients([]);
-        return;
-      }
-
-      const completed = parsed.filter((patient) => {
-        const fpe = getIcareValue(patient, "fpe");
-
-        return (
-          String(fpe || "")
-            .trim()
-            .toUpperCase() === "COMPLETED"
-        );
-      });
-
-      setIcareCompletedPatients(completed);
-    } catch (error) {
-      console.error(
-        "Error loading ICARE:",
-        error
+    const settingsRef =
+      doc(
+        db,
+        "yakapSettings",
+        "teleconsult"
       );
 
-      setIcareCompletedPatients([]);
-    }
-  };
+    const unsubscribe =
+      onSnapshot(
+        settingsRef,
+        (snap) => {
+          const data =
+            snap.data();
 
-  useEffect(() => {
-    loadCompletedIcarePatients();
+          if (
+            Array.isArray(
+              data?.medicineMonths
+            ) &&
+            data.medicineMonths.length
+          ) {
+            setMedicineMonths(
+              data.medicineMonths.map(
+                normalizeMonthName
+              )
+            );
+          } else {
+            setMedicineMonths(
+              DEFAULT_MEDICINE_MONTHS
+            );
+          }
+        },
+        (error) => {
+          console.error(
+            "Error loading Teleconsult settings from Firestore:",
+            error
+          );
 
-    const interval = setInterval(
-      loadCompletedIcarePatients,
-      1000
-    );
+          setMedicineMonths(
+            DEFAULT_MEDICINE_MONTHS
+          );
+        }
+      );
 
-    return () => clearInterval(interval);
+    return () =>
+      unsubscribe();
   }, []);
 
   /* =======================================================
-     BUILD COMPANY LIST FROM ICARE
+     PERSIST MEDICINE MONTH SETTINGS
   ======================================================= */
 
-  useEffect(() => {
-    if (!icareCompletedPatients.length) return;
-
-    const icareCompanies = icareCompletedPatients
-      .map((patient) =>
-        normalizeCompanyName(
-          getIcareValue(patient, "company")
-        )
-      )
-      .filter(Boolean);
-
-    if (!icareCompanies.length) return;
-
-    setCompanies((prev) => {
-      const existing = new Map(
-        prev.map((company) => [
-          company.toLowerCase(),
-          company,
-        ])
-      );
-
-      let changed = false;
-
-      icareCompanies.forEach((company) => {
-        const key = company.toLowerCase();
-
-        if (!existing.has(key)) {
-          existing.set(key, company);
-          changed = true;
+  const persistMedicineMonths =
+    async (months) => {
+      await setDoc(
+        doc(
+          db,
+          "yakapSettings",
+          "teleconsult"
+        ),
+        {
+          medicineMonths:
+            months,
+          updatedAt:
+            new Date().toISOString(),
+        },
+        {
+          merge: true,
         }
-      });
-
-      return changed
-        ? Array.from(existing.values()).sort(
-            (a, b) =>
-              a.localeCompare(b)
-          )
-        : prev;
-    });
-  }, [icareCompletedPatients]);
+      );
+    };
 
   /* =======================================================
-     LOCAL STORAGE SYNCHRONIZATION
+     LOAD ICARE FROM FIRESTORE
   ======================================================= */
 
   useEffect(() => {
-    const handleStorage = (event) => {
-      if (
-        event.key === ICARE_STORAGE_KEY ||
-        event.key === null
-      ) {
-        loadCompletedIcarePatients();
-      }
+    const patientsRef =
+      collection(
+        db,
+        "icarePatients"
+      );
 
-      if (
-        event.key === TELECONSULT_STORAGE_KEY ||
-        event.key === null
-      ) {
-        try {
-          const saved = localStorage.getItem(
-            TELECONSULT_STORAGE_KEY
+    const unsubscribe =
+      onSnapshot(
+        patientsRef,
+        (snapshot) => {
+          const patients =
+            snapshot.docs.map(
+              (docSnapshot) => ({
+                id:
+                  docSnapshot.id,
+                ...docSnapshot.data(),
+              })
+            );
+
+          const completed =
+            patients.filter(
+              (patient) => {
+                const fpe =
+                  getIcareValue(
+                    patient,
+                    "fpe"
+                  );
+
+                return (
+                  String(
+                    fpe || ""
+                  )
+                    .trim()
+                    .toUpperCase() ===
+                  "COMPLETED"
+                );
+              }
+            );
+
+          setIcareCompletedPatients(
+            completed
+          );
+        },
+        (error) => {
+          console.error(
+            "Error loading ICARE patients from Firestore:",
+            error
+          );
+
+          setIcareCompletedPatients(
+            []
+          );
+        }
+      );
+
+    return () =>
+      unsubscribe();
+  }, []);
+
+  /* =======================================================
+     LOAD TELECONSULT FROM FIRESTORE
+  ======================================================= */
+
+  useEffect(() => {
+    const teleconsultRef =
+      collection(
+        db,
+        "teleconsultPatients"
+      );
+
+    const unsubscribe =
+      onSnapshot(
+        teleconsultRef,
+        (snapshot) => {
+          const data = {};
+
+          snapshot.docs.forEach(
+            (docSnapshot) => {
+              data[
+                docSnapshot.id
+              ] = {
+                id:
+                  docSnapshot.id,
+                ...docSnapshot.data(),
+              };
+            }
           );
 
           setTeleconsultExtraData(
-            saved ? JSON.parse(saved) : {}
+            data
           );
-        } catch (error) {
+        },
+        (error) => {
           console.error(
-            "Error syncing Teleconsult:",
+            "Error loading Teleconsult data from Firestore:",
             error
           );
-        }
-      }
 
-      if (
-        event.key === MEDICINE_MONTHS_STORAGE_KEY ||
-        event.key === null
-      ) {
-        try {
-          const saved = localStorage.getItem(
-            MEDICINE_MONTHS_STORAGE_KEY
-          );
-
-          if (saved) {
-            const parsed = JSON.parse(saved);
-
-            if (
-              Array.isArray(parsed) &&
-              parsed.length > 0
-            ) {
-              setMedicineMonths(
-                parsed.map(normalizeMonthName)
-              );
-            }
-          }
-        } catch (error) {
-          console.error(
-            "Error syncing medicine months:",
-            error
+          setTeleconsultExtraData(
+            {}
           );
         }
-      }
-
-      if (
-        event.key === COMPANY_STORAGE_KEY ||
-        event.key === null
-      ) {
-        try {
-          const saved = localStorage.getItem(
-            COMPANY_STORAGE_KEY
-          );
-
-          if (saved) {
-            const parsed = JSON.parse(saved);
-
-            if (Array.isArray(parsed)) {
-              setCompanies(
-                parsed
-                  .map(normalizeCompanyName)
-                  .filter(Boolean)
-              );
-            }
-          }
-        } catch (error) {
-          console.error(
-            "Error syncing companies:",
-            error
-          );
-        }
-      }
-    };
-
-    const handleCustomSync = () => {
-      try {
-        const saved = localStorage.getItem(
-          TELECONSULT_STORAGE_KEY
-        );
-
-        setTeleconsultExtraData(
-          saved ? JSON.parse(saved) : {}
-        );
-      } catch (error) {
-        console.error(
-          "Error handling Teleconsult sync:",
-          error
-        );
-      }
-    };
-
-    window.addEventListener(
-      "storage",
-      handleStorage
-    );
-
-    window.addEventListener(
-      TELECONSULT_SYNC_EVENT,
-      handleCustomSync
-    );
-
-    return () => {
-      window.removeEventListener(
-        "storage",
-        handleStorage
       );
 
-      window.removeEventListener(
-        TELECONSULT_SYNC_EVENT,
-        handleCustomSync
-      );
-    };
+    return () =>
+      unsubscribe();
   }, []);
 
   /* =======================================================
-     SAVE TELECONSULT
+     LOAD COMPANIES FROM FIRESTORE
   ======================================================= */
 
   useEffect(() => {
-    try {
-      localStorage.setItem(
-        TELECONSULT_STORAGE_KEY,
-        JSON.stringify(teleconsultExtraData)
+    const companiesRef =
+      collection(
+        db,
+        "yakapCompanies"
       );
-    } catch (error) {
-      console.error(
-        "Error saving Teleconsult:",
-        error
+
+    const unsubscribe =
+      onSnapshot(
+        companiesRef,
+        (snapshot) => {
+          const firebaseCompanies =
+            snapshot.docs
+              .map(
+                (docSnapshot) =>
+                  docSnapshot.data()?.name
+              )
+              .map(
+                normalizeCompanyName
+              )
+              .filter(Boolean);
+
+          setCompanies(
+            Array.from(
+              new Map(
+                firebaseCompanies.map(
+                  (company) => [
+                    company.toLowerCase(),
+                    company,
+                  ]
+                )
+              ).values()
+            ).sort((a, b) =>
+              a.localeCompare(b)
+            )
+          );
+        },
+        (error) => {
+          console.error(
+            "Error loading companies from Firestore:",
+            error
+          );
+
+          setCompanies([]);
+        }
       );
+
+    return () =>
+      unsubscribe();
+  }, []);
+
+  /* =======================================================
+     BUILD COMPANY LIST FROM COMPLETED ICARE
+  ======================================================= */
+
+  useEffect(() => {
+    if (
+      !icareCompletedPatients.length
+    ) {
+      return;
     }
-  }, [teleconsultExtraData]);
+
+    const icareCompanies =
+      icareCompletedPatients
+        .map((patient) =>
+          normalizeCompanyName(
+            getIcareValue(
+              patient,
+              "company"
+            )
+          )
+        )
+        .filter(Boolean);
+
+    if (
+      !icareCompanies.length
+    ) {
+      return;
+    }
+
+    setCompanies(
+      (prev) => {
+        const existing =
+          new Map(
+            prev.map(
+              (company) => [
+                company.toLowerCase(),
+                company,
+              ]
+            )
+          );
+
+        let changed = false;
+
+        icareCompanies.forEach(
+          (company) => {
+            const key =
+              company.toLowerCase();
+
+            if (
+              !existing.has(key)
+            ) {
+              existing.set(
+                key,
+                company
+              );
+
+              changed = true;
+            }
+          }
+        );
+
+        return changed
+          ? Array.from(
+              existing.values()
+            ).sort((a, b) =>
+              a.localeCompare(b)
+            )
+          : prev;
+      }
+    );
+  }, [icareCompletedPatients]);
 
   /* =======================================================
      COMPANY MANAGEMENT
   ======================================================= */
 
-  const handleOpenCompanyModal = () => {
-    setNewCompanyName("");
-    setCompanyError("");
-    setShowCompanyModal(true);
-  };
+  const handleOpenCompanyModal =
+    () => {
+      setNewCompanyName("");
+      setCompanyError("");
+      setShowCompanyModal(true);
+    };
 
-  const handleCloseCompanyModal = () => {
-    setShowCompanyModal(false);
-    setNewCompanyName("");
-    setCompanyError("");
-  };
+  const handleCloseCompanyModal =
+    () => {
+      setShowCompanyModal(false);
+      setNewCompanyName("");
+      setCompanyError("");
+    };
 
-  const handleAddCompany = (event) => {
+  const handleAddCompany = async (
+    event
+  ) => {
     event.preventDefault();
 
     const company =
-      normalizeCompanyName(newCompanyName);
+      normalizeCompanyName(
+        newCompanyName
+      );
 
     if (!company) {
       setCompanyError(
         "Please enter a company name."
       );
+
       return;
     }
 
-    const duplicate = companies.some(
-      (existingCompany) =>
-        existingCompany.toLowerCase() ===
-        company.toLowerCase()
-    );
+    const duplicate =
+      companies.some(
+        (existingCompany) =>
+          existingCompany
+            .toLowerCase() ===
+          company.toLowerCase()
+      );
 
     if (duplicate) {
       setCompanyError(
         "This company already exists."
       );
+
       return;
     }
 
-    setCompanies((prev) =>
-      [...prev, company].sort(
-        (a, b) =>
-          a.localeCompare(b)
-      )
-    );
+    try {
+      const companyId =
+        encodeURIComponent(
+          company
+        );
 
-    setSelectedCompany(company);
+      await setDoc(
+        doc(
+          db,
+          "yakapCompanies",
+          companyId
+        ),
+        {
+          name: company,
+          createdAt:
+            new Date().toISOString(),
+          updatedAt:
+            new Date().toISOString(),
+        },
+        {
+          merge: true,
+        }
+      );
 
-    setNewCompanyName("");
-    setCompanyError("");
-    setShowCompanyModal(false);
+      setSelectedCompany(
+        company
+      );
+
+      setNewCompanyName("");
+      setCompanyError("");
+      setShowCompanyModal(false);
+    } catch (error) {
+      console.error(
+        "Error adding company:",
+        error
+      );
+
+      setCompanyError(
+        error?.message ||
+          "Unable to save company."
+      );
+    }
   };
 
   /* =======================================================
      BUILD TELECONSULT PATIENTS
   ======================================================= */
 
-  const teleconsultPatients = useMemo(() => {
-    const result = [];
-    const usedIds = new Set();
+  const teleconsultPatients =
+    useMemo(() => {
+      const result = [];
+      const usedIds = new Set();
 
-    icareCompletedPatients.forEach((icarePatient) => {
-      const icareId = getIcareValue(
-        icarePatient,
-        "id"
-      );
-
-      const philHealth = getIcareValue(
-        icarePatient,
-        "philhealthNo"
-      );
-
-      const lastName = getIcareValue(
-        icarePatient,
-        "lastName"
-      );
-
-      const firstName = getIcareValue(
-        icarePatient,
-        "firstName"
-      );
-
-      const middleName = getIcareValue(
-        icarePatient,
-        "middleName"
-      );
-
-      const stableId =
-        icareId ||
-        [
-          philHealth,
-          lastName,
-          firstName,
-          middleName,
-        ]
-          .join("-")
-          .toLowerCase();
-
-      if (usedIds.has(stableId)) return;
-
-      usedIds.add(stableId);
-
-      const extra =
-        teleconsultExtraData[stableId] || {};
-
-      const monthlyDeliveries =
-        normalizeMonthlyDeliveries(
-          extra.monthlyDeliveries,
-          extra.firstDelivery,
-          extra.subsequentDeliveries,
-          medicineMonths
-        );
-
-      const medicinesByMonth =
-        normalizeMedicinesByMonth(
-          extra.medicinesByMonth,
-          extra.medicines,
-          medicineMonths
-        );
-
-      /* Delivery medicines take priority */
-      monthlyDeliveries.forEach((delivery) => {
-        if (
-          Array.isArray(delivery.medicines) &&
-          delivery.medicines.length > 0
-        ) {
-          medicinesByMonth[delivery.month] =
-            normalizeMedicineList(
-              delivery.medicines
+      icareCompletedPatients.forEach(
+        (icarePatient) => {
+          const icareId =
+            getIcareValue(
+              icarePatient,
+              "id"
             );
+
+          const philHealth =
+            getIcareValue(
+              icarePatient,
+              "philhealthNo"
+            );
+
+          const lastName =
+            getIcareValue(
+              icarePatient,
+              "lastName"
+            );
+
+          const firstName =
+            getIcareValue(
+              icarePatient,
+              "firstName"
+            );
+
+          const middleName =
+            getIcareValue(
+              icarePatient,
+              "middleName"
+            );
+
+          const stableId =
+            String(
+              icareId ||
+                [
+                  philHealth,
+                  lastName,
+                  firstName,
+                  middleName,
+                ]
+                  .join("-")
+                  .toLowerCase()
+            );
+
+          if (!stableId) {
+            return;
+          }
+
+          if (
+            usedIds.has(stableId)
+          ) {
+            return;
+          }
+
+          usedIds.add(stableId);
+
+          const extra =
+            teleconsultExtraData[
+              stableId
+            ] || {};
+
+          const monthlyDeliveries =
+            normalizeMonthlyDeliveries(
+              extra.monthlyDeliveries,
+              extra.firstDelivery,
+              extra.subsequentDeliveries,
+              medicineMonths
+            );
+
+          const medicinesByMonth =
+            normalizeMedicinesByMonth(
+              extra.medicinesByMonth,
+              extra.medicines,
+              medicineMonths
+            );
+
+          monthlyDeliveries.forEach(
+            (delivery) => {
+              if (
+                Array.isArray(
+                  delivery.medicines
+                ) &&
+                delivery.medicines
+                  .length > 0
+              ) {
+                medicinesByMonth[
+                  delivery.month
+                ] =
+                  normalizeMedicineList(
+                    delivery.medicines
+                  );
+              }
+            }
+          );
+
+          result.push({
+            id: stableId,
+
+            company:
+              extra.company ||
+              getIcareValue(
+                icarePatient,
+                "company"
+              ),
+
+            no:
+              getIcareValue(
+                icarePatient,
+                "no"
+              ),
+
+            philHealthNo:
+              philHealth,
+
+            lastName,
+
+            firstName,
+
+            middleName,
+
+            dateOfBirth:
+              getIcareValue(
+                icarePatient,
+                "dateOfBirth"
+              ),
+
+            address:
+              extra.address ||
+              getIcareValue(
+                icarePatient,
+                "address"
+              ),
+
+            age:
+              getIcareValue(
+                icarePatient,
+                "age"
+              ),
+
+            contactNo:
+  extra.contactNo ??
+  (
+    getIcareValue(
+      icarePatient,
+      "contactNumber"
+    ) ||
+    getIcareValue(
+      icarePatient,
+      "contactNo"
+    )
+  ),
+            dateOfCall:
+              extra.dateOfCall ||
+              "",
+
+            nextTeleconsult:
+              extra.nextTeleconsult ||
+              "",
+
+            status:
+              extra.status ||
+              "",
+
+            remarks:
+              extra.remarks ||
+              "",
+
+            medicineDelivery:
+              extra.medicineDelivery ||
+              "No",
+
+            monthlyDeliveries,
+
+            medicinesByMonth,
+          });
         }
-      });
+      );
 
-      result.push({
-        id: stableId,
-
-        company:
-          extra.company ||
-          getIcareValue(
-            icarePatient,
-            "company"
-          ),
-
-        no: getIcareValue(
-          icarePatient,
-          "no"
-        ),
-
-        philHealthNo: philHealth,
-
-        lastName,
-
-        firstName,
-
-        middleName,
-
-        dateOfBirth: getIcareValue(
-          icarePatient,
-          "dateOfBirth"
-        ),
-
-        address: getIcareValue(
-          icarePatient,
-          "address"
-        ),
-
-        age: getIcareValue(
-          icarePatient,
-          "age"
-        ),
-
-        contactNo:
-          extra.contactNo ??
-          getIcareValue(
-            icarePatient,
-            "contactNo"
-          ),
-
-        dateOfCall:
-          extra.dateOfCall || "",
-
-        nextTeleconsult:
-          extra.nextTeleconsult || "",
-
-        status:
-          extra.status || "Call Done",
-
-        remarks:
-          extra.remarks || "",
-
-        medicineDelivery:
-          extra.medicineDelivery || "No",
-
-        monthlyDeliveries,
-
-        medicinesByMonth,
-      });
-    });
-
-    return result;
-  }, [
-    icareCompletedPatients,
-    teleconsultExtraData,
-    medicineMonths,
-  ]);
+      return result;
+    }, [
+      icareCompletedPatients,
+      teleconsultExtraData,
+      medicineMonths,
+    ]);
 
   /* =======================================================
      SEARCH + COMPANY FILTER
   ======================================================= */
 
-  const filteredPatients = useMemo(() => {
-    const search =
-      searchTerm.toLowerCase().trim();
+  const filteredPatients =
+    useMemo(() => {
+      const search =
+        searchTerm
+          .toLowerCase()
+          .trim();
 
-    return teleconsultPatients.filter(
-      (patient) => {
-        const matchesCompany =
-          selectedCompany === "All Companies" ||
-          normalizeCompanyName(
-            patient.company
-          ).toLowerCase() ===
+      return teleconsultPatients.filter(
+        (patient) => {
+          const matchesCompany =
+            selectedCompany ===
+              "All Companies" ||
             normalizeCompanyName(
-              selectedCompany
-            ).toLowerCase();
+              patient.company
+            ).toLowerCase() ===
+              normalizeCompanyName(
+                selectedCompany
+              ).toLowerCase();
 
-        if (!matchesCompany) {
-          return false;
+          if (!matchesCompany) {
+            return false;
+          }
+
+          if (!search) {
+            return true;
+          }
+
+          const values = [
+            patient.company,
+            patient.no,
+            patient.philHealthNo,
+            patient.lastName,
+            patient.firstName,
+            patient.middleName,
+            patient.contactNo,
+          ];
+
+          return values.some(
+            (value) =>
+              String(value || "")
+                .toLowerCase()
+                .includes(search)
+          );
         }
-
-        if (!search) {
-          return true;
-        }
-
-        const values = [
-          patient.company,
-          patient.no,
-          patient.philHealthNo,
-          patient.lastName,
-          patient.firstName,
-          patient.middleName,
-          patient.contactNo,
-        ];
-
-        return values.some((value) =>
-          String(value || "")
-            .toLowerCase()
-            .includes(search)
-        );
-      }
-    );
-  }, [
-    teleconsultPatients,
-    searchTerm,
-    selectedCompany,
-  ]);
+      );
+    }, [
+      teleconsultPatients,
+      searchTerm,
+      selectedCompany,
+    ]);
 
   /* =======================================================
-     SUMMARY
-  ======================================================= */
+   SUMMARY — RESPECTS SELECTED COMPANY
+======================================================= */
 
-  const totalPatientEndorsed =
-    teleconsultPatients.length;
+const totalPatientEndorsed =
+  filteredPatients.length;
 
-  const totalCallDone =
-    teleconsultPatients.filter(
-      (patient) =>
-        patient.status === "Call Done"
-    ).length;
+const totalCallDone =
+  filteredPatients.filter(
+    (patient) =>
+      patient.status === "Call Done"
+  ).length;
 
-  const totalNotAvailable =
-    teleconsultPatients.filter(
-      (patient) =>
-        patient.status === "Not Available"
-    ).length;
+const totalNotAvailable =
+  filteredPatients.filter(
+    (patient) =>
+      patient.status === "Not Available"
+  ).length;
 
-  const totalMedicineDelivery =
-    teleconsultPatients.filter(
-      (patient) =>
-        patient.medicineDelivery === "Yes"
-    ).length;
+const totalMedicineDelivery =
+  filteredPatients.filter(
+    (patient) =>
+      patient.medicineDelivery === "Yes"
+  ).length;
 
   /* =======================================================
      MEDICINE SEARCH
   ======================================================= */
 
-  const filteredMedicines = useMemo(() => {
-    const search =
-      medicineSearch.toLowerCase().trim();
-
-    if (!search) {
-      return MEDICINE_LIST;
-    }
-
-    return MEDICINE_LIST.filter(
-      (medicine) =>
-        medicine
+  const filteredMedicines =
+    useMemo(() => {
+      const search =
+        medicineSearch
           .toLowerCase()
-          .includes(search)
-    );
-  }, [medicineSearch]);
+          .trim();
+
+      if (!search) {
+        return MEDICINE_LIST;
+      }
+
+      return MEDICINE_LIST.filter(
+        (medicine) =>
+          medicine
+            .toLowerCase()
+            .includes(search)
+      );
+    }, [medicineSearch]);
 
   /* =======================================================
      FORM INPUT
   ======================================================= */
 
-  const handleInputChange = (event) => {
+  const handleInputChange = (
+    event
+  ) => {
     const {
       name,
       value,
     } = event.target;
 
-    setNewPatient((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setNewPatient(
+      (prev) => ({
+        ...prev,
+        [name]: value,
+      })
+    );
   };
 
-  const handleContactNumberChange = (event) => {
-    let value =
-      event.target.value.replace(/\D/g, "");
+  const handleContactNumberChange =
+    (event) => {
+      let value =
+        event.target.value.replace(
+          /\D/g,
+          ""
+        );
 
-    if (value.startsWith("63")) {
-      value = value.slice(2);
-    }
+      if (
+        value.startsWith("63")
+      ) {
+        value =
+          value.slice(2);
+      }
 
-    if (value.startsWith("0")) {
-      value = value.slice(1);
-    }
+      if (
+        value.startsWith("0")
+      ) {
+        value =
+          value.slice(1);
+      }
 
-    value = value.slice(0, 10);
+      value =
+        value.slice(0, 10);
 
-    setNewPatient((prev) => ({
-      ...prev,
-      contactNo: value,
-    }));
-  };
+      setNewPatient(
+        (prev) => ({
+          ...prev,
+          contactNo: value,
+        })
+      );
+    };
 
   /* =======================================================
      MEDICINE FORM
   ======================================================= */
 
-  const resetMedicineForm = () => {
-    setSelectedMedicine("");
-    setMedicineSearch("");
-    setMedicineQty("");
-    setShowMedicineDropdown(false);
-  };
+  const resetMedicineForm =
+    () => {
+      setSelectedMedicine("");
+      setMedicineSearch("");
+      setMedicineQty("");
+      setShowMedicineDropdown(
+        false
+      );
+    };
 
-  const handleSelectMedicine = (medicine) => {
-    setSelectedMedicine(medicine);
-    setMedicineSearch(medicine);
-    setShowMedicineDropdown(false);
-  };
+  const handleSelectMedicine =
+    (medicine) => {
+      setSelectedMedicine(
+        medicine
+      );
+
+      setMedicineSearch(
+        medicine
+      );
+
+      setShowMedicineDropdown(
+        false
+      );
+    };
 
   /* =======================================================
      ADD MEDICINE MONTH
   ======================================================= */
 
-  const handleAddMedicineMonth = () => {
-    if (!medicineMonths.length) {
-      const firstMonth =
-        "SEPTEMBER 2026";
+  const handleAddMedicineMonth =
+    async () => {
+      if (
+        !medicineMonths.length
+      ) {
+        const firstMonth =
+          "SEPTEMBER 2026";
 
-      setMedicineMonths([
-        firstMonth,
-      ]);
+        const updatedMonths = [
+          firstMonth,
+        ];
 
-      setNewPatient((prev) => ({
-        ...prev,
+        setMedicineMonths(
+          updatedMonths
+        );
 
-        medicinesByMonth: {
-          ...(prev.medicinesByMonth || {}),
-          [firstMonth]: [],
-        },
-      }));
+        setNewPatient(
+          (prev) => ({
+            ...prev,
+
+            medicinesByMonth: {
+              ...(prev.medicinesByMonth ||
+                {}),
+              [firstMonth]: [],
+            },
+          })
+        );
+
+        setActiveMedicineMonth(
+          firstMonth
+        );
+
+        resetMedicineForm();
+
+        try {
+          await persistMedicineMonths(
+            updatedMonths
+          );
+        } catch (error) {
+          console.error(
+            "Error saving medicine months to Firestore:",
+            error
+          );
+
+          alert(
+            "Unable to save the medicine month settings."
+          );
+        }
+
+        return;
+      }
+
+      const lastMonth =
+        medicineMonths[
+          medicineMonths.length -
+            1
+        ];
+
+      const nextMonth =
+        getNextMonthName(
+          lastMonth
+        );
+
+      if (!nextMonth) {
+        alert(
+          "Unable to determine the next month."
+        );
+
+        return;
+      }
+
+      if (
+        medicineMonths.includes(
+          nextMonth
+        )
+      ) {
+        return;
+      }
+
+      const updatedMonths = [
+        ...medicineMonths,
+        nextMonth,
+      ];
+
+      setMedicineMonths(
+        updatedMonths
+      );
+
+      setNewPatient(
+        (prev) => ({
+          ...prev,
+
+          medicinesByMonth: {
+            ...(prev.medicinesByMonth ||
+              {}),
+            [nextMonth]: [],
+          },
+        })
+      );
 
       setActiveMedicineMonth(
-        firstMonth
+        nextMonth
       );
 
       resetMedicineForm();
-      return;
-    }
 
-    const lastMonth =
-      medicineMonths[
-        medicineMonths.length - 1
-      ];
+      try {
+        await persistMedicineMonths(
+          updatedMonths
+        );
+      } catch (error) {
+        console.error(
+          "Error saving medicine months to Firestore:",
+          error
+        );
 
-    const nextMonth =
-      getNextMonthName(lastMonth);
-
-    if (!nextMonth) {
-      alert(
-        "Unable to determine the next month."
-      );
-      return;
-    }
-
-    if (
-      medicineMonths.includes(nextMonth)
-    ) {
-      return;
-    }
-
-    setMedicineMonths((prev) => [
-      ...prev,
-      nextMonth,
-    ]);
-
-    setNewPatient((prev) => ({
-      ...prev,
-
-      medicinesByMonth: {
-        ...(prev.medicinesByMonth || {}),
-        [nextMonth]: [],
-      },
-    }));
-
-    setActiveMedicineMonth(
-      nextMonth
-    );
-
-    resetMedicineForm();
-  };
+        alert(
+          "Unable to save the medicine month settings."
+        );
+      }
+    };
 
   /* =======================================================
      ADD MEDICINE
   ======================================================= */
 
-  const handleAddMedicine = (month) => {
+  const handleAddMedicine = (
+    month
+  ) => {
     if (!month) {
       alert(
         "Please select a medicine month."
       );
+
       return;
     }
 
@@ -1306,6 +1592,7 @@ function Teleconsult() {
       alert(
         "Please select a medicine."
       );
+
       return;
     }
 
@@ -1316,30 +1603,37 @@ function Teleconsult() {
       alert(
         "Please enter a valid quantity."
       );
+
       return;
     }
 
     const newMedicine = {
       id: createMedicineId(),
-      medicine: selectedMedicine,
-      quantity: Number(medicineQty),
+      medicine:
+        selectedMedicine,
+      quantity:
+        Number(medicineQty),
     };
 
-    setNewPatient((prev) => ({
-      ...prev,
+    setNewPatient(
+      (prev) => ({
+        ...prev,
 
-      medicinesByMonth: {
-        ...(prev.medicinesByMonth || {}),
+        medicinesByMonth: {
+          ...(prev.medicinesByMonth ||
+            {}),
 
-        [month]: [
-          ...(prev.medicinesByMonth?.[
-            month
-          ] || []),
+          [month]: [
+            ...(prev
+              .medicinesByMonth?.[
+              month
+            ] || []),
 
-          newMedicine,
-        ],
-      },
-    }));
+            newMedicine,
+          ],
+        },
+      })
+    );
 
     resetMedicineForm();
   };
@@ -1352,23 +1646,27 @@ function Teleconsult() {
     month,
     medicineId
   ) => {
-    setNewPatient((prev) => ({
-      ...prev,
+    setNewPatient(
+      (prev) => ({
+        ...prev,
 
-      medicinesByMonth: {
-        ...(prev.medicinesByMonth || {}),
+        medicinesByMonth: {
+          ...(prev.medicinesByMonth ||
+            {}),
 
-        [month]: (
-          prev.medicinesByMonth?.[
-            month
-          ] || []
-        ).filter(
-          (medicine) =>
-            medicine.id !==
-            medicineId
-        ),
-      },
-    }));
+          [month]: (
+            prev
+              .medicinesByMonth?.[
+              month
+            ] || []
+          ).filter(
+            (medicine) =>
+              medicine.id !==
+              medicineId
+          ),
+        },
+      })
+    );
   };
 
   /* =======================================================
@@ -1380,494 +1678,613 @@ function Teleconsult() {
     field,
     value
   ) => {
-    setNewPatient((prev) => {
-      const current =
-        Array.isArray(
-          prev.monthlyDeliveries
-        )
-          ? prev.monthlyDeliveries
-          : [];
+    setNewPatient(
+      (prev) => {
+        const current =
+          Array.isArray(
+            prev.monthlyDeliveries
+          )
+            ? prev.monthlyDeliveries
+            : [];
 
-      const index =
-        current.findIndex(
-          (delivery) =>
-            delivery.id === deliveryId
-        );
+        const index =
+          current.findIndex(
+            (delivery) =>
+              delivery.id ===
+              deliveryId
+          );
 
-      if (index === -1) {
-        return prev;
-      }
-
-      /*
-       * Month 1 controls all scheduled dates.
-       */
-      if (
-        field === "scheduledDate" &&
-        index === 0
-      ) {
-        if (!value) {
-          return {
-            ...prev,
-            monthlyDeliveries: current.map(
-              (delivery, i) =>
-                i === 0
-                  ? {
-                      ...delivery,
-                      scheduledDate:
-                        "",
-                    }
-                  : delivery
-            ),
-          };
+        if (index === -1) {
+          return prev;
         }
 
-        const generated =
-          generateMonthlyDeliveries(
-            value,
-            current,
-            medicineMonths
-          );
+        if (
+          field ===
+            "scheduledDate" &&
+          index === 0
+        ) {
+          if (!value) {
+            return {
+              ...prev,
+
+              monthlyDeliveries:
+                current.map(
+                  (
+                    delivery,
+                    i
+                  ) =>
+                    i === 0
+                      ? {
+                          ...delivery,
+                          scheduledDate:
+                            "",
+                        }
+                      : delivery
+                ),
+            };
+          }
+
+          const generated =
+            generateMonthlyDeliveries(
+              value,
+              current,
+              medicineMonths
+            );
+
+          return {
+            ...prev,
+
+            monthlyDeliveries:
+              generated.map(
+                (delivery) => ({
+                  ...delivery,
+
+                  medicines:
+                    normalizeMedicineList(
+                      prev
+                        .medicinesByMonth?.[
+                        delivery.month
+                      ]
+                    ),
+                })
+              ),
+          };
+        }
 
         return {
           ...prev,
 
           monthlyDeliveries:
-            generated.map(
-              (delivery) => ({
-                ...delivery,
-
-                medicines:
-                  normalizeMedicineList(
-                    prev
-                      .medicinesByMonth?.[
-                      delivery.month
-                    ]
-                  ),
-              })
+            current.map(
+              (delivery) =>
+                delivery.id ===
+                deliveryId
+                  ? {
+                      ...delivery,
+                      [field]:
+                        value,
+                    }
+                  : delivery
             ),
         };
       }
-
-      return {
-        ...prev,
-
-        monthlyDeliveries:
-          current.map(
-            (delivery) =>
-              delivery.id ===
-              deliveryId
-                ? {
-                    ...delivery,
-                    [field]:
-                      value,
-                  }
-                : delivery
-          ),
-      };
-    });
+    );
   };
 
   /* =======================================================
      EDIT
   ======================================================= */
 
-  const handleEditPatient = (patient) => {
-    setEditingPatient(patient);
-
-    const monthlyDeliveries =
-      normalizeMonthlyDeliveries(
-        patient.monthlyDeliveries,
-        patient.firstDelivery,
-        patient.subsequentDeliveries,
-        medicineMonths
+  const handleEditPatient =
+    (patient) => {
+      setEditingPatient(
+        patient
       );
 
-    const medicinesByMonth =
-      normalizeMedicinesByMonth(
-        patient.medicinesByMonth,
-        patient.medicines,
-        medicineMonths
-      );
+      const monthlyDeliveries =
+        normalizeMonthlyDeliveries(
+          patient.monthlyDeliveries,
+          patient.firstDelivery,
+          patient.subsequentDeliveries,
+          medicineMonths
+        );
 
-    monthlyDeliveries.forEach(
-      (delivery) => {
-        if (
-          Array.isArray(
-            delivery.medicines
-          ) &&
-          delivery.medicines.length > 0
-        ) {
-          medicinesByMonth[
-            delivery.month
-          ] =
-            normalizeMedicineList(
+      const medicinesByMonth =
+        normalizeMedicinesByMonth(
+          patient.medicinesByMonth,
+          patient.medicines,
+          medicineMonths
+        );
+
+      monthlyDeliveries.forEach(
+        (delivery) => {
+          if (
+            Array.isArray(
               delivery.medicines
-            );
+            ) &&
+            delivery.medicines
+              .length > 0
+          ) {
+            medicinesByMonth[
+              delivery.month
+            ] =
+              normalizeMedicineList(
+                delivery.medicines
+              );
+          }
         }
-      }
-    );
+      );
 
-    medicineMonths.forEach(
-      (month) => {
-        if (
-          !Object.prototype.hasOwnProperty.call(
-            medicinesByMonth,
-            month
-          )
-        ) {
-          medicinesByMonth[
-            month
-          ] = [];
+      medicineMonths.forEach(
+        (month) => {
+          if (
+            !Object.prototype.hasOwnProperty.call(
+              medicinesByMonth,
+              month
+            )
+          ) {
+            medicinesByMonth[
+              month
+            ] = [];
+          }
         }
-      }
-    );
+      );
 
-    setNewPatient({
-      ...emptyPatient,
+      setNewPatient({
+        ...emptyPatient,
 
-      company:
-        patient.company || "",
+        company:
+          patient.company ||
+          "",
 
-      no:
-        patient.no || "",
+        no:
+          patient.no ||
+          "",
 
-      philHealthNo:
-        patient.philHealthNo || "",
+        philHealthNo:
+          patient.philHealthNo ||
+          "",
 
-      lastName:
-        patient.lastName || "",
+        lastName:
+          patient.lastName ||
+          "",
 
-      firstName:
-        patient.firstName || "",
+        firstName:
+          patient.firstName ||
+          "",
 
-      middleName:
-        patient.middleName || "",
+        middleName:
+          patient.middleName ||
+          "",
 
-      dateOfBirth:
-        patient.dateOfBirth || "",
+        dateOfBirth:
+          patient.dateOfBirth ||
+          "",
 
-      address:
-        patient.address || "",
+        address:
+          patient.address ||
+          "",
 
-      age:
-        patient.age || "",
+        age:
+          patient.age ||
+          "",
 
-      contactNo:
-        patient.contactNo || "",
+        contactNo:
+          patient.contactNo ||
+          "",
 
-      dateOfCall:
-        patient.dateOfCall || "",
+        dateOfCall:
+          patient.dateOfCall ||
+          "",
 
-      nextTeleconsult:
-        patient.nextTeleconsult || "",
+        nextTeleconsult:
+          patient.nextTeleconsult ||
+          "",
 
-      status:
-        patient.status || "Call Done",
+        status:
+          patient.status ||
+          "Call Done",
 
-      remarks:
-        patient.remarks || "",
+        remarks:
+          patient.remarks ||
+          "",
 
-      medicineDelivery:
-        patient.medicineDelivery || "No",
+        medicineDelivery:
+          patient.medicineDelivery ||
+          "No",
 
-      monthlyDeliveries,
+        monthlyDeliveries,
 
-      medicinesByMonth,
-    });
+        medicinesByMonth,
+      });
 
-    setActiveMedicineMonth(
-      medicineMonths[0] || ""
-    );
+      setActiveMedicineMonth(
+        medicineMonths[0] ||
+          ""
+      );
 
-    resetMedicineForm();
+      resetMedicineForm();
 
-    setShowPatientModal(true);
-    setViewingPatient(null);
-  };
+      setShowPatientModal(
+        true
+      );
+
+      setViewingPatient(
+        null
+      );
+    };
 
   /* =======================================================
      CLOSE EDIT
   ======================================================= */
 
-  const handleClosePatientModal = () => {
-    setShowPatientModal(false);
-    setEditingPatient(null);
+  const handleClosePatientModal =
+    () => {
+      setShowPatientModal(false);
+      setEditingPatient(null);
 
-    setNewPatient({
-      ...emptyPatient,
+      setNewPatient({
+        ...emptyPatient,
 
-      monthlyDeliveries: [],
+        monthlyDeliveries:
+          [],
 
-      medicinesByMonth:
-        Object.fromEntries(
-          medicineMonths.map(
-            (month) => [
-              month,
-              [],
-            ]
-          )
-        ),
-    });
+        medicinesByMonth:
+          Object.fromEntries(
+            medicineMonths.map(
+              (month) => [
+                month,
+                [],
+              ]
+            )
+          ),
+      });
 
-    setActiveMedicineMonth(
-      medicineMonths[0] || ""
-    );
+      setActiveMedicineMonth(
+        medicineMonths[0] ||
+          ""
+      );
 
-    resetMedicineForm();
-  };
+      resetMedicineForm();
+    };
 
   /* =======================================================
-     SAVE PATIENT
+     SAVE PATIENT TO FIRESTORE
   ======================================================= */
 
-  const handleSavePatient = (event) => {
-    event.preventDefault();
+  const handleSavePatient =
+    async (event) => {
+      event.preventDefault();
 
-    if (!editingPatient) {
-      alert(
-        "Teleconsult records are automatically created from ICARE when FPE is COMPLETED."
-      );
-      return;
-    }
-
-    const id =
-      editingPatient.id;
-
-    const endorsed =
-      newPatient.medicineDelivery ===
-      "Yes";
-
-    const medicinesByMonth = {};
-
-    /*
-     * Preserve every dynamic month.
-     */
-    medicineMonths.forEach(
-      (month) => {
-        medicinesByMonth[
-          month
-        ] =
-          normalizeMedicineList(
-            newPatient
-              .medicinesByMonth?.[
-              month
-            ]
-          );
-      }
-    );
-
-    const totalMedicines =
-      Object.values(
-        medicinesByMonth
-      ).reduce(
-        (total, medicines) =>
-          total +
-          medicines.length,
-        0
-      );
-
-    if (
-      endorsed &&
-      totalMedicines === 0
-    ) {
-      alert(
-        "Please add at least one prescribed medicine before endorsing the patient to Medicine Delivery."
-      );
-      return;
-    }
-
-    let monthlyDeliveries =
-      Array.isArray(
-        newPatient.monthlyDeliveries
-      )
-        ? newPatient.monthlyDeliveries
-        : [];
-
-    /* =====================================================
-       ENDORSED
-    ===================================================== */
-
-    if (endorsed) {
-      const firstDeliveryDate =
-        monthlyDeliveries[0]
-          ?.scheduledDate;
-
-      if (!firstDeliveryDate) {
+      if (!editingPatient) {
         alert(
-          "Please enter the Month 1 scheduled delivery date first."
+          "Teleconsult records are automatically created from ICARE when FPE is COMPLETED."
         );
+
         return;
       }
 
-      monthlyDeliveries =
-        generateMonthlyDeliveries(
-          firstDeliveryDate,
+      setIsSaving(true);
+
+      try {
+        const id =
+          String(
+            editingPatient.id
+          );
+
+        const endorsed =
+          newPatient.medicineDelivery ===
+          "Yes";
+
+        const medicinesByMonth =
+          {};
+
+        medicineMonths.forEach(
+          (month) => {
+            medicinesByMonth[
+              month
+            ] =
+              normalizeMedicineList(
+                newPatient
+                  .medicinesByMonth?.[
+                  month
+                ]
+              );
+          }
+        );
+
+        const totalMedicines =
+          Object.values(
+            medicinesByMonth
+          ).reduce(
+            (
+              total,
+              medicines
+            ) =>
+              total +
+              medicines.length,
+            0
+          );
+
+        if (
+          endorsed &&
+          totalMedicines === 0
+        ) {
+          alert(
+            "Please add at least one prescribed medicine before endorsing the patient to Medicine Delivery."
+          );
+
+          return;
+        }
+
+        let monthlyDeliveries =
+          Array.isArray(
+            newPatient.monthlyDeliveries
+          )
+            ? newPatient.monthlyDeliveries
+            : [];
+
+        if (endorsed) {
+          const firstDeliveryDate =
+            monthlyDeliveries[0]
+              ?.scheduledDate;
+
+          if (!firstDeliveryDate) {
+            alert(
+              "Please enter the Month 1 scheduled delivery date first."
+            );
+
+            return;
+          }
+
+          monthlyDeliveries =
+            generateMonthlyDeliveries(
+              firstDeliveryDate,
+              monthlyDeliveries,
+              medicineMonths
+            );
+
+          monthlyDeliveries =
+            monthlyDeliveries.map(
+              (delivery) => ({
+                ...delivery,
+
+                medicines:
+                  medicinesByMonth[
+                    delivery.month
+                  ] || [],
+              })
+            );
+        } else {
+          monthlyDeliveries =
+            [];
+        }
+
+        /* ===============================================
+           EXISTING FIRESTORE DATA
+        =============================================== */
+
+        const existing =
+          teleconsultExtraData[
+            id
+          ] || {};
+
+        const now =
+          new Date().toISOString();
+
+        /* ===============================================
+           TELECONSULT FIRESTORE DATA
+        =============================================== */
+
+        const teleconsultData = {
+          ...existing,
+
+          company:
+            normalizeCompanyName(
+              newPatient.company
+            ),
+
+          no:
+            newPatient.no,
+
+          philHealthNo:
+            newPatient.philHealthNo,
+
+          lastName:
+            newPatient.lastName,
+
+          firstName:
+            newPatient.firstName,
+
+          middleName:
+            newPatient.middleName,
+
+          dateOfBirth:
+            newPatient.dateOfBirth,
+
+          address:
+            newPatient.address,
+
+          age:
+            newPatient.age,
+
+          contactNo:
+            newPatient.contactNo,
+
+          dateOfCall:
+            newPatient.dateOfCall,
+
+          nextTeleconsult:
+            newPatient.nextTeleconsult,
+
+          status:
+            newPatient.status,
+
+          remarks:
+            newPatient.remarks,
+
+          medicineDelivery:
+            endorsed
+              ? "Yes"
+              : "No",
+
           monthlyDeliveries,
-          medicineMonths
-        );
 
-      monthlyDeliveries =
-        monthlyDeliveries.map(
-          (delivery) => ({
-            ...delivery,
+          medicinesByMonth:
+            endorsed
+              ? medicinesByMonth
+              : Object.fromEntries(
+                  medicineMonths.map(
+                    (month) => [
+                      month,
+                      [],
+                    ]
+                  )
+                ),
 
-            medicines:
-              medicinesByMonth[
-                delivery.month
-              ] || [],
-          })
-        );
-    } else {
-      monthlyDeliveries = [];
-    }
+          updatedAt: now,
 
-    /* =====================================================
-       UPDATE STATE
-    ===================================================== */
-
-    setTeleconsultExtraData(
-      (prev) => {
-        const updated = {
-          ...prev,
-
-          [id]: {
-            ...(prev[id] || {}),
-
-            company:
-              normalizeCompanyName(
-                newPatient.company
-              ),
-
-            contactNo:
-              newPatient.contactNo,
-
-            dateOfCall:
-              newPatient.dateOfCall,
-
-            nextTeleconsult:
-              newPatient.nextTeleconsult,
-
-            status:
-              newPatient.status,
-
-            remarks:
-              newPatient.remarks,
-
-            medicineDelivery:
-              endorsed
-                ? "Yes"
-                : "No",
-
-            monthlyDeliveries,
-
-            medicinesByMonth:
-              endorsed
-                ? medicinesByMonth
-                : Object.fromEntries(
-                    medicineMonths.map(
-                      (month) => [
-                        month,
-                        [],
-                      ]
-                    )
-                  ),
-          },
+          createdAt:
+            existing.createdAt ||
+            now,
         };
 
-        /*
-         * Same-tab synchronization.
-         */
-        setTimeout(() => {
-  window.dispatchEvent(
-    new Event(TELECONSULT_SYNC_EVENT)
-  );
+        /* ===============================================
+           SAVE ONLY TELECONSULT
+           ICARE IS NOT TOUCHED.
+        =============================================== */
 
-  window.dispatchEvent(
-    new Event(
-      MEDICINE_DELIVERY_SYNC_EVENT
-    )
-  );
-}, 0);
+        await setDoc(
+          doc(
+            db,
+            "teleconsultPatients",
+            id
+          ),
+          teleconsultData,
+          {
+            merge: true,
+          }
+        );
 
-        return updated;
+        handleClosePatientModal();
+      } catch (error) {
+        console.error(
+          "Teleconsult save error:",
+          error
+        );
+
+        alert(
+          `Unable to save Teleconsult changes.\n\nCode: ${
+            error?.code ||
+            "Unknown"
+          }\n\nMessage: ${
+            error?.message ||
+            "Unknown Firebase error"
+          }`
+        );
+      } finally {
+        setIsSaving(false);
       }
-    );
-
-    handleClosePatientModal();
-  };
+    };
 
   /* =======================================================
-     DELETE
+     DELETE TELECONSULT ONLY
   ======================================================= */
 
-  const handleDeletePatient = (patient) => {
-    const fullName = [
-      patient.firstName,
-      patient.middleName,
-      patient.lastName,
-    ]
-      .filter(Boolean)
-      .join(" ");
+  const handleDeletePatient =
+    async (patient) => {
+      const fullName = [
+        patient.firstName,
+        patient.middleName,
+        patient.lastName,
+      ]
+        .filter(Boolean)
+        .join(" ");
 
-    const confirmed =
-      window.confirm(
-        `Remove ${
-          fullName ||
-          "this patient"
-        } from Teleconsult monitoring?`
-      );
+      const confirmed =
+        window.confirm(
+          `Remove ${
+            fullName ||
+            "this patient"
+          } from Teleconsult monitoring?\n\nThis will NOT delete the ICARE Registration record.`
+        );
 
-    if (!confirmed) return;
-
-    setTeleconsultExtraData(
-      (prev) => {
-        const updated = {
-          ...prev,
-        };
-
-        delete updated[
-          patient.id
-        ];
-
-        return updated;
+      if (!confirmed) {
+        return;
       }
-    );
 
-    setViewingPatient(null);
-  };
+      try {
+        await deleteDoc(
+          doc(
+            db,
+            "teleconsultPatients",
+            String(
+              patient.id
+            )
+          )
+        );
+
+        setViewingPatient(
+          null
+        );
+      } catch (error) {
+        console.error(
+          "Teleconsult delete error:",
+          error
+        );
+
+        alert(
+          `Unable to remove Teleconsult record.\n\nCode: ${
+            error?.code ||
+            "Unknown"
+          }\n\nMessage: ${
+            error?.message ||
+            "Unknown Firebase error"
+          }`
+        );
+      }
+    };
 
   /* =======================================================
      VIEW
   ======================================================= */
 
-  const handleViewPatient = (patient) => {
-    setViewingPatient(patient);
-  };
+  const handleViewPatient =
+    (patient) => {
+      setViewingPatient(
+        patient
+      );
+    };
 
   /* =======================================================
      MEDICINE COUNTS
   ======================================================= */
 
-  const getMonthMedicineCount = (
-    medicinesByMonth,
-    month
-  ) =>
-    medicinesByMonth?.[
+  const getMonthMedicineCount =
+    (
+      medicinesByMonth,
       month
-    ]?.length || 0;
+    ) =>
+      medicinesByMonth?.[
+        month
+      ]?.length || 0;
 
-  const getTotalMedicineCount = (
-    medicinesByMonth
-  ) =>
-    medicineMonths.reduce(
-      (total, month) =>
-        total +
-        getMonthMedicineCount(
-          medicinesByMonth,
+  const getTotalMedicineCount =
+    (
+      medicinesByMonth
+    ) =>
+      medicineMonths.reduce(
+        (
+          total,
           month
-        ),
-      0
-    );
+        ) =>
+          total +
+          getMonthMedicineCount(
+            medicinesByMonth,
+            month
+          ),
+        0
+      );
 
   /* =======================================================
      CURRENT MONTH MEDICINES
@@ -1876,8 +2293,8 @@ function Teleconsult() {
   const currentMonthMedicines =
     newPatient
       .medicinesByMonth?.[
-        activeMedicineMonth
-      ] || [];
+      activeMedicineMonth
+    ] || [];
 
   /* =======================================================
      RENDER
@@ -1902,10 +2319,6 @@ function Teleconsult() {
           </p>
         </div>
 
-        {/* ===============================================
-            COMPANY MANAGEMENT
-        =============================================== */}
-
         <div className="teleconsult-company-controls">
 
           <div className="teleconsult-company-select-wrapper">
@@ -1915,10 +2328,15 @@ function Teleconsult() {
             </label>
 
             <select
-              value={selectedCompany}
-              onChange={(event) =>
+              value={
+                selectedCompany
+              }
+              onChange={(
+                event
+              ) =>
                 setSelectedCompany(
-                  event.target.value
+                  event.target
+                    .value
                 )
               }
             >
@@ -1971,7 +2389,9 @@ function Teleconsult() {
             </span>
 
             <strong>
-              {totalPatientEndorsed}
+              {
+                totalPatientEndorsed
+              }
             </strong>
           </div>
         </div>
@@ -2003,7 +2423,9 @@ function Teleconsult() {
             </span>
 
             <strong>
-              {totalNotAvailable}
+              {
+                totalNotAvailable
+              }
             </strong>
           </div>
         </div>
@@ -2019,7 +2441,9 @@ function Teleconsult() {
             </span>
 
             <strong>
-              {totalMedicineDelivery}
+              {
+                totalMedicineDelivery
+              }
             </strong>
           </div>
         </div>
@@ -2053,10 +2477,15 @@ function Teleconsult() {
             <input
               type="text"
               placeholder="Search PhilHealth No. / Last Name / First Name"
-              value={searchTerm}
-              onChange={(event) =>
+              value={
+                searchTerm
+              }
+              onChange={(
+                event
+              ) =>
                 setSearchTerm(
-                  event.target.value
+                  event.target
+                    .value
                 )
               }
             />
@@ -2094,33 +2523,56 @@ function Teleconsult() {
 
             <tbody>
 
-              {filteredPatients.length > 0 ? (
+              {filteredPatients.length >
+              0 ? (
                 filteredPatients.map(
                   (patient) => (
-                    <tr key={patient.id}>
+                    <tr
+                      key={
+                        patient.id
+                      }
+                    >
 
                       <td>
-                        {patient.company || "—"}
+                        {
+                          patient.company ||
+                          "—"
+                        }
                       </td>
 
                       <td>
-                        {patient.no || "—"}
+                        {
+                          patient.no ||
+                          "—"
+                        }
                       </td>
 
                       <td>
-                        {patient.philHealthNo || "—"}
+                        {
+                          patient.philHealthNo ||
+                          "—"
+                        }
                       </td>
 
                       <td>
-                        {patient.lastName || "—"}
+                        {
+                          patient.lastName ||
+                          "—"
+                        }
                       </td>
 
                       <td>
-                        {patient.firstName || "—"}
+                        {
+                          patient.firstName ||
+                          "—"
+                        }
                       </td>
 
                       <td>
-                        {patient.middleName || "—"}
+                        {
+                          patient.middleName ||
+                          "—"
+                        }
                       </td>
 
                       <td>
@@ -2130,11 +2582,17 @@ function Teleconsult() {
                       </td>
 
                       <td>
-                        {patient.address || "—"}
+                        {
+                          patient.address ||
+                          "—"
+                        }
                       </td>
 
                       <td>
-                        {patient.age || "—"}
+                        {
+                          patient.age ||
+                          "—"
+                        }
                       </td>
 
                       <td>
@@ -2164,12 +2622,18 @@ function Teleconsult() {
                               : "teleconsult-status unavailable"
                           }
                         >
-                          {patient.status || "—"}
+                          {
+                            patient.status ||
+                            "—"
+                          }
                         </span>
                       </td>
 
                       <td>
-                        {patient.remarks || "—"}
+                        {
+                          patient.remarks ||
+                          "—"
+                        }
                       </td>
 
                       <td>
@@ -2181,15 +2645,24 @@ function Teleconsult() {
                               : "teleconsult-delivery no"
                           }
                         >
-                          {patient.medicineDelivery || "No"}
+                          {
+                            patient.medicineDelivery ||
+                            "No"
+                          }
                         </span>
                       </td>
 
                       <td>
-                        {patient.monthlyDeliveries?.length ? (
+                        {patient
+                          .monthlyDeliveries
+                          ?.length ? (
                           <span className="medicine-count-badge">
                             📦{" "}
-                            {patient.monthlyDeliveries.length}
+                            {
+                              patient
+                                .monthlyDeliveries
+                                .length
+                            }
                           </span>
                         ) : (
                           <span className="medicine-none">
@@ -2269,7 +2742,9 @@ function Teleconsult() {
                     colSpan="18"
                     className="teleconsult-empty"
                   >
-                    <div>👥</div>
+                    <div>
+                      👥
+                    </div>
 
                     <strong>
                       No Teleconsult Patients
@@ -2304,7 +2779,9 @@ function Teleconsult() {
 
           <div
             className="teleconsult-modal teleconsult-company-modal"
-            onClick={(event) =>
+            onClick={(
+              event
+            ) =>
               event.stopPropagation()
             }
           >
@@ -2351,14 +2828,23 @@ function Teleconsult() {
 
                     <input
                       type="text"
-                      value={newCompanyName}
-                      onChange={(event) => {
+                      value={
+                        newCompanyName
+                      }
+                      onChange={(
+                        event
+                      ) => {
                         setNewCompanyName(
-                          event.target.value
+                          event.target
+                            .value
                         );
 
-                        if (companyError) {
-                          setCompanyError("");
+                        if (
+                          companyError
+                        ) {
+                          setCompanyError(
+                            ""
+                          );
                         }
                       }}
                       placeholder="Enter company name"
@@ -2367,7 +2853,9 @@ function Teleconsult() {
 
                     {companyError && (
                       <small className="teleconsult-error">
-                        {companyError}
+                        {
+                          companyError
+                        }
                       </small>
                     )}
 
@@ -2413,13 +2901,17 @@ function Teleconsult() {
         <div
           className="teleconsult-modal-overlay"
           onClick={() =>
-            setViewingPatient(null)
+            setViewingPatient(
+              null
+            )
           }
         >
 
           <div
             className="teleconsult-modal"
-            onClick={(event) =>
+            onClick={(
+              event
+            ) =>
               event.stopPropagation()
             }
           >
@@ -2440,7 +2932,9 @@ function Teleconsult() {
                 type="button"
                 className="teleconsult-modal-close"
                 onClick={() =>
-                  setViewingPatient(null)
+                  setViewingPatient(
+                    null
+                  )
                 }
               >
                 ✕
@@ -2453,49 +2947,88 @@ function Teleconsult() {
               <div className="teleconsult-detail-grid">
 
                 <div>
-                  <label>Company</label>
+                  <label>
+                    Company
+                  </label>
+
                   <strong>
-                    {viewingPatient.company || "—"}
+                    {
+                      viewingPatient.company ||
+                      "—"
+                    }
                   </strong>
                 </div>
 
                 <div>
-                  <label>No.</label>
+                  <label>
+                    No.
+                  </label>
+
                   <strong>
-                    {viewingPatient.no || "—"}
+                    {
+                      viewingPatient.no ||
+                      "—"
+                    }
                   </strong>
                 </div>
 
                 <div>
-                  <label>PhilHealth No.</label>
+                  <label>
+                    PhilHealth No.
+                  </label>
+
                   <strong>
-                    {viewingPatient.philHealthNo || "—"}
+                    {
+                      viewingPatient.philHealthNo ||
+                      "—"
+                    }
                   </strong>
                 </div>
 
                 <div>
-                  <label>Last Name</label>
+                  <label>
+                    Last Name
+                  </label>
+
                   <strong>
-                    {viewingPatient.lastName || "—"}
+                    {
+                      viewingPatient.lastName ||
+                      "—"
+                    }
                   </strong>
                 </div>
 
                 <div>
-                  <label>First Name</label>
+                  <label>
+                    First Name
+                  </label>
+
                   <strong>
-                    {viewingPatient.firstName || "—"}
+                    {
+                      viewingPatient.firstName ||
+                      "—"
+                    }
                   </strong>
                 </div>
 
                 <div>
-                  <label>Middle Name</label>
+                  <label>
+                    Middle Name
+                  </label>
+
                   <strong>
-                    {viewingPatient.middleName || "—"}
+                    {
+                      viewingPatient.middleName ||
+                      "—"
+                    }
                   </strong>
                 </div>
 
                 <div>
-                  <label>Date of Birth</label>
+                  <label>
+                    Date of Birth
+                  </label>
+
                   <strong>
                     {formatDate(
                       viewingPatient.dateOfBirth
@@ -2504,14 +3037,23 @@ function Teleconsult() {
                 </div>
 
                 <div>
-                  <label>Age</label>
+                  <label>
+                    Age
+                  </label>
+
                   <strong>
-                    {viewingPatient.age || "—"}
+                    {
+                      viewingPatient.age ||
+                      "—"
+                    }
                   </strong>
                 </div>
 
                 <div>
-                  <label>Contact No.</label>
+                  <label>
+                    Contact No.
+                  </label>
+
                   <strong>
                     {viewingPatient.contactNo
                       ? `+63 ${viewingPatient.contactNo}`
@@ -2520,14 +3062,23 @@ function Teleconsult() {
                 </div>
 
                 <div className="teleconsult-detail-full">
-                  <label>Address</label>
+                  <label>
+                    Address
+                  </label>
+
                   <strong>
-                    {viewingPatient.address || "—"}
+                    {
+                      viewingPatient.address ||
+                      "—"
+                    }
                   </strong>
                 </div>
 
                 <div>
-                  <label>Date of Call</label>
+                  <label>
+                    Date of Call
+                  </label>
+
                   <strong>
                     {formatDate(
                       viewingPatient.dateOfCall
@@ -2536,7 +3087,10 @@ function Teleconsult() {
                 </div>
 
                 <div>
-                  <label>Next Teleconsult</label>
+                  <label>
+                    Next Teleconsult
+                  </label>
+
                   <strong>
                     {formatDate(
                       viewingPatient.nextTeleconsult
@@ -2545,31 +3099,45 @@ function Teleconsult() {
                 </div>
 
                 <div>
-                  <label>Status</label>
+                  <label>
+                    Status
+                  </label>
+
                   <strong>
-                    {viewingPatient.status || "—"}
+                    {
+                      viewingPatient.status ||
+                      "—"
+                    }
                   </strong>
                 </div>
 
                 <div>
-                  <label>Medicine Delivery</label>
+                  <label>
+                    Medicine Delivery
+                  </label>
+
                   <strong>
-                    {viewingPatient.medicineDelivery || "No"}
+                    {
+                      viewingPatient.medicineDelivery ||
+                      "No"
+                    }
                   </strong>
                 </div>
 
                 <div className="teleconsult-detail-full">
-                  <label>Remarks</label>
+                  <label>
+                    Remarks
+                  </label>
+
                   <strong>
-                    {viewingPatient.remarks || "—"}
+                    {
+                      viewingPatient.remarks ||
+                      "—"
+                    }
                   </strong>
                 </div>
 
               </div>
-
-              {/* =========================================
-                  MONTHLY DELIVERIES
-              ========================================= */}
 
               <div className="teleconsult-section">
 
@@ -2579,19 +3147,27 @@ function Teleconsult() {
                   </h3>
                 </div>
 
-                {viewingPatient.monthlyDeliveries?.length ? (
+                {viewingPatient
+                  .monthlyDeliveries
+                  ?.length ? (
                   <div className="teleconsult-delivery-list">
 
                     {viewingPatient.monthlyDeliveries.map(
-                      (delivery) => (
+                      (
+                        delivery
+                      ) => (
                         <div
                           className="teleconsult-delivery-card"
-                          key={delivery.id}
+                          key={
+                            delivery.id
+                          }
                         >
 
                           <div>
                             <span>
-                              {delivery.month}
+                              {
+                                delivery.month
+                              }
                             </span>
 
                             <strong>
@@ -2602,10 +3178,14 @@ function Teleconsult() {
                           </div>
 
                           <div>
-                            <span>Status</span>
+                            <span>
+                              Status
+                            </span>
 
                             <strong>
-                              {delivery.status}
+                              {
+                                delivery.status
+                              }
                             </strong>
                           </div>
 
@@ -2633,10 +3213,6 @@ function Teleconsult() {
                 )}
 
               </div>
-
-              {/* =========================================
-                  MEDICINES
-              ========================================= */}
 
               <div className="teleconsult-section">
 
@@ -2668,7 +3244,9 @@ function Teleconsult() {
                           <div className="teleconsult-medicine-list">
 
                             {medicines.map(
-                              (medicine) => (
+                              (
+                                medicine
+                              ) => (
                                 <div
                                   className="teleconsult-medicine-row"
                                   key={
@@ -2677,7 +3255,9 @@ function Teleconsult() {
                                 >
 
                                   <span>
-                                    {medicine.medicine}
+                                    {
+                                      medicine.medicine
+                                    }
                                   </span>
 
                                   <strong>
@@ -2713,7 +3293,9 @@ function Teleconsult() {
                 type="button"
                 className="teleconsult-cancel-btn"
                 onClick={() =>
-                  setViewingPatient(null)
+                  setViewingPatient(
+                    null
+                  )
                 }
               >
                 Close
@@ -2726,7 +3308,9 @@ function Teleconsult() {
                   const patient =
                     viewingPatient;
 
-                  setViewingPatient(null);
+                  setViewingPatient(
+                    null
+                  );
 
                   handleEditPatient(
                     patient
@@ -2757,7 +3341,9 @@ function Teleconsult() {
 
           <div
             className="teleconsult-modal teleconsult-edit-modal"
-            onClick={(event) =>
+            onClick={(
+              event
+            ) =>
               event.stopPropagation()
             }
           >
@@ -2794,10 +3380,6 @@ function Teleconsult() {
 
               <div className="teleconsult-modal-body">
 
-                {/* =====================================
-                    PATIENT INFORMATION
-                ===================================== */}
-
                 <div className="teleconsult-section">
 
                   <div className="teleconsult-section-header">
@@ -2807,10 +3389,6 @@ function Teleconsult() {
                   </div>
 
                   <div className="teleconsult-form-grid">
-
-                    {/* =================================
-                        COMPANY
-                    ================================= */}
 
                     <div className="teleconsult-field">
 
@@ -2834,7 +3412,9 @@ function Teleconsult() {
                           </option>
 
                           {companies.map(
-                            (company) => (
+                            (
+                              company
+                            ) => (
                               <option
                                 key={
                                   company
@@ -2867,7 +3447,10 @@ function Teleconsult() {
                     </div>
 
                     <div className="teleconsult-field">
-                      <label>No.</label>
+                      <label>
+                        No.
+                      </label>
+
                       <input
                         value={
                           newPatient.no
@@ -2877,7 +3460,10 @@ function Teleconsult() {
                     </div>
 
                     <div className="teleconsult-field">
-                      <label>PhilHealth No.</label>
+                      <label>
+                        PhilHealth No.
+                      </label>
+
                       <input
                         value={
                           newPatient.philHealthNo
@@ -2887,7 +3473,10 @@ function Teleconsult() {
                     </div>
 
                     <div className="teleconsult-field">
-                      <label>Last Name</label>
+                      <label>
+                        Last Name
+                      </label>
+
                       <input
                         value={
                           newPatient.lastName
@@ -2897,7 +3486,10 @@ function Teleconsult() {
                     </div>
 
                     <div className="teleconsult-field">
-                      <label>First Name</label>
+                      <label>
+                        First Name
+                      </label>
+
                       <input
                         value={
                           newPatient.firstName
@@ -2907,7 +3499,10 @@ function Teleconsult() {
                     </div>
 
                     <div className="teleconsult-field">
-                      <label>Middle Name</label>
+                      <label>
+                        Middle Name
+                      </label>
+
                       <input
                         value={
                           newPatient.middleName
@@ -2917,19 +3512,23 @@ function Teleconsult() {
                     </div>
 
                     <div className="teleconsult-field">
-                      <label>Date of Birth</label>
+                      <label>
+                        Date of Birth
+                      </label>
+
                       <input
-                        value={
-                          formatDate(
-                            newPatient.dateOfBirth
-                          )
-                        }
+                        value={formatDate(
+                          newPatient.dateOfBirth
+                        )}
                         readOnly
                       />
                     </div>
 
                     <div className="teleconsult-field">
-                      <label>Age</label>
+                      <label>
+                        Age
+                      </label>
+
                       <input
                         value={
                           newPatient.age
@@ -2939,9 +3538,12 @@ function Teleconsult() {
                     </div>
 
                     <div className="teleconsult-field">
-                      <label>Contact No.</label>
+                      <label>
+                        Contact No.
+                      </label>
 
                       <div className="teleconsult-contact-input">
+
                         <span>
                           +63
                         </span>
@@ -2957,11 +3559,15 @@ function Teleconsult() {
                           placeholder="9XXXXXXXXX"
                           maxLength="10"
                         />
+
                       </div>
                     </div>
 
                     <div className="teleconsult-field teleconsult-field-full">
-                      <label>Address</label>
+
+                      <label>
+                        Address
+                      </label>
 
                       <input
                         value={
@@ -2969,15 +3575,12 @@ function Teleconsult() {
                         }
                         readOnly
                       />
+
                     </div>
 
                   </div>
 
                 </div>
-
-                {/* =====================================
-                    TELECONSULT
-                ===================================== */}
 
                 <div className="teleconsult-section">
 
@@ -2990,6 +3593,7 @@ function Teleconsult() {
                   <div className="teleconsult-form-grid">
 
                     <div className="teleconsult-field">
+
                       <label>
                         Date of Call
                       </label>
@@ -3004,9 +3608,11 @@ function Teleconsult() {
                           handleInputChange
                         }
                       />
+
                     </div>
 
                     <div className="teleconsult-field">
+
                       <label>
                         Schedule Next Teleconsult
                       </label>
@@ -3021,10 +3627,14 @@ function Teleconsult() {
                           handleInputChange
                         }
                       />
+
                     </div>
 
                     <div className="teleconsult-field">
-                      <label>Status</label>
+
+                      <label>
+                        Status
+                      </label>
 
                       <select
                         name="status"
@@ -3036,19 +3646,29 @@ function Teleconsult() {
                         }
                       >
                         {TELECONSULT_STATUSES.map(
-                          (status) => (
+                          (
+                            status
+                          ) => (
                             <option
-                              key={status}
-                              value={status}
+                              key={
+                                status
+                              }
+                              value={
+                                status
+                              }
                             >
-                              {status}
+                              {
+                                status
+                              }
                             </option>
                           )
                         )}
                       </select>
+
                     </div>
 
                     <div className="teleconsult-field">
+
                       <label>
                         Endorsed to Medicine Delivery
                       </label>
@@ -3070,9 +3690,11 @@ function Teleconsult() {
                           Yes
                         </option>
                       </select>
+
                     </div>
 
                     <div className="teleconsult-field teleconsult-field-full">
+
                       <label>
                         Remarks
                       </label>
@@ -3088,15 +3710,12 @@ function Teleconsult() {
                         rows="3"
                         placeholder="Enter remarks..."
                       />
+
                     </div>
 
                   </div>
 
                 </div>
-
-                {/* =====================================
-                    DELIVERY SCHEDULE
-                ===================================== */}
 
                 <div className="teleconsult-section">
 
@@ -3119,7 +3738,10 @@ function Teleconsult() {
                     <div className="teleconsult-delivery-edit-list">
 
                       {newPatient.monthlyDeliveries.map(
-                        (delivery, index) => (
+                        (
+                          delivery,
+                          index
+                        ) => (
                           <div
                             className="teleconsult-delivery-edit-card"
                             key={
@@ -3128,20 +3750,26 @@ function Teleconsult() {
                           >
 
                             <div className="teleconsult-delivery-month-title">
+
                               <span>
-                                {delivery.month}
+                                {
+                                  delivery.month
+                                }
                               </span>
 
-                              {index === 0 && (
+                              {index ===
+                                0 && (
                                 <small>
                                   Month 1
                                 </small>
                               )}
+
                             </div>
 
                             <div className="teleconsult-form-grid">
 
                               <div className="teleconsult-field">
+
                                 <label>
                                   Scheduled Date
                                 </label>
@@ -3171,9 +3799,11 @@ function Teleconsult() {
                                     Changing Month 1 automatically updates the other months.
                                   </small>
                                 )}
+
                               </div>
 
                               <div className="teleconsult-field">
+
                                 <label>
                                   Status
                                 </label>
@@ -3196,7 +3826,9 @@ function Teleconsult() {
                                   }
                                 >
                                   {DELIVERY_STATUSES.map(
-                                    (status) => (
+                                    (
+                                      status
+                                    ) => (
                                       <option
                                         key={
                                           status
@@ -3205,14 +3837,18 @@ function Teleconsult() {
                                           status
                                         }
                                       >
-                                        {status}
+                                        {
+                                          status
+                                        }
                                       </option>
                                     )
                                   )}
                                 </select>
+
                               </div>
 
                               <div className="teleconsult-field">
+
                                 <label>
                                   Actual Delivery Date
                                 </label>
@@ -3235,6 +3871,7 @@ function Teleconsult() {
                                     )
                                   }
                                 />
+
                               </div>
 
                             </div>
@@ -3243,8 +3880,11 @@ function Teleconsult() {
                         )
                       )}
 
-                      {!newPatient.monthlyDeliveries.length && (
+                      {!newPatient
+                        .monthlyDeliveries
+                        .length && (
                         <div className="teleconsult-empty-delivery">
+
                           <strong>
                             No delivery schedule yet.
                           </strong>
@@ -3252,6 +3892,7 @@ function Teleconsult() {
                           <p>
                             Add medicines and save with Medicine Delivery = Yes to create the schedule.
                           </p>
+
                         </div>
                       )}
 
@@ -3264,10 +3905,6 @@ function Teleconsult() {
                   )}
 
                 </div>
-
-                {/* =====================================
-                    MEDICINE MONTH SETTINGS
-                ===================================== */}
 
                 <div className="teleconsult-section">
 
@@ -3295,15 +3932,17 @@ function Teleconsult() {
 
                   </div>
 
-                  {/* MONTH TABS */}
-
                   <div className="teleconsult-month-tabs">
 
                     {medicineMonths.map(
-                      (month) => (
+                      (
+                        month
+                      ) => (
                         <button
                           type="button"
-                          key={month}
+                          key={
+                            month
+                          }
                           className={
                             activeMedicineMonth ===
                             month
@@ -3314,10 +3953,13 @@ function Teleconsult() {
                             setActiveMedicineMonth(
                               month
                             );
+
                             resetMedicineForm();
                           }}
                         >
-                          {month}
+                          {
+                            month
+                          }
 
                           <span>
                             {
@@ -3327,19 +3969,20 @@ function Teleconsult() {
                               )
                             }
                           </span>
+
                         </button>
                       )
                     )}
 
                   </div>
 
-                  {/* MEDICINE FORM */}
-
                   {activeMedicineMonth && (
                     <div className="teleconsult-medicine-editor">
 
                       <h4>
-                        {activeMedicineMonth}
+                        {
+                          activeMedicineMonth
+                        }
                       </h4>
 
                       <div className="teleconsult-medicine-add-row">
@@ -3456,8 +4099,6 @@ function Teleconsult() {
 
                       </div>
 
-                      {/* MEDICINE LIST */}
-
                       <div className="teleconsult-current-medicine-list">
 
                         {currentMonthMedicines.length >
@@ -3474,6 +4115,7 @@ function Teleconsult() {
                               >
 
                                 <div>
+
                                   <strong>
                                     {
                                       medicine.medicine
@@ -3486,6 +4128,7 @@ function Teleconsult() {
                                       medicine.quantity
                                     }
                                   </span>
+
                                 </div>
 
                                 <button
@@ -3506,7 +4149,9 @@ function Teleconsult() {
                         ) : (
                           <div className="teleconsult-no-current-medicine">
                             No medicines added for{" "}
-                            {activeMedicineMonth}.
+                            {
+                              activeMedicineMonth
+                            }.
                           </div>
                         )}
 
@@ -3519,10 +4164,6 @@ function Teleconsult() {
 
               </div>
 
-              {/* =========================================
-                  FOOTER
-              ========================================= */}
-
               <div className="teleconsult-modal-footer">
 
                 <button
@@ -3531,6 +4172,9 @@ function Teleconsult() {
                   onClick={
                     handleClosePatientModal
                   }
+                  disabled={
+                    isSaving
+                  }
                 >
                   Cancel
                 </button>
@@ -3538,8 +4182,13 @@ function Teleconsult() {
                 <button
                   type="submit"
                   className="teleconsult-save-btn"
+                  disabled={
+                    isSaving
+                  }
                 >
-                  💾 Save Changes
+                  {isSaving
+                    ? "💾 Saving..."
+                    : "💾 Save Changes"}
                 </button>
 
               </div>

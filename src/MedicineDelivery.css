@@ -51,7 +51,6 @@
 
 /* =========================================================
    SUMMARY CARDS
-   DARK BLUE BOX + WHITE TEXT
 ========================================================= */
 
 .medicine-delivery-summary-grid {
@@ -86,21 +85,9 @@
   font-size: 21px;
 }
 
-.pending-icon {
-  background: #ffffff;
-  color: #0b2a4a;
-}
-
-.preparing-icon {
-  background: #ffffff;
-  color: #0b2a4a;
-}
-
-.delivery-icon {
-  background: #ffffff;
-  color: #0b2a4a;
-}
-
+.pending-icon,
+.preparing-icon,
+.delivery-icon,
 .completed-icon {
   background: #ffffff;
   color: #0b2a4a;
@@ -128,7 +115,6 @@
 
 /* =========================================================
    TABLE CARD
-   WHITE BOX
 ========================================================= */
 
 .medicine-delivery-table-card {
@@ -252,9 +238,9 @@
 
 .medicine-delivery-table thead th {
   padding: 13px 16px;
-  background: #f4f7fa;
-  border-bottom: 1px solid #dbe5ee;
-  color: #526579;
+  background: #0b2a4a;
+  border-bottom: 1px solid #0b2a4a;
+  color: #ffffff;
   font-size: 11px;
   line-height: 1.3;
   font-weight: 700;
@@ -452,7 +438,6 @@
 
 /* =========================================================
    STATUS
-   KEEP ORIGINAL COLORS
 ========================================================= */
 
 .delivery-status {
@@ -495,8 +480,7 @@
 }
 
 /* =========================================================
-   VIEW / EDIT BUTTONS
-   DARK BLUE + WHITE
+   VIEW / EDIT / DELETE BUTTONS
 ========================================================= */
 
 .delivery-action-buttons {
@@ -508,6 +492,7 @@
 
 .delivery-view-btn,
 .delivery-edit-btn,
+.delivery-delete-btn,
 .delivery-save-btn,
 .delivery-cancel-btn {
   display: inline-flex;
@@ -529,7 +514,10 @@
     transform 0.1s ease;
 }
 
-/* VIEW */
+/* =========================================================
+   VIEW
+========================================================= */
+
 .delivery-view-btn {
   border: 1px solid #0b2a4a;
   background: #0b2a4a;
@@ -542,7 +530,10 @@
   color: #ffffff;
 }
 
-/* EDIT */
+/* =========================================================
+   EDIT
+========================================================= */
+
 .delivery-edit-btn {
   border: 1px solid #0b2a4a;
   background: #ffffff;
@@ -555,7 +546,38 @@
   color: #ffffff;
 }
 
-/* SAVE */
+/* =========================================================
+   DELETE
+========================================================= */
+
+.delivery-delete-btn {
+  border: 1px solid #0b2a4a;
+  background: #ffffff;
+  color: #0b2a4a;
+}
+
+.delivery-delete-btn:hover {
+  background: #0b2a4a;
+  border-color: #0b2a4a;
+  color: #ffffff;
+}
+
+.delivery-delete-btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.delivery-delete-btn:disabled:hover {
+  background: #ffffff;
+  border-color: #0b2a4a;
+  color: #0b2a4a;
+}
+
+/* =========================================================
+   SAVE
+========================================================= */
+
 .delivery-save-btn {
   border: 1px solid #0b2a4a;
   background: #0b2a4a;
@@ -568,7 +590,10 @@
   color: #ffffff;
 }
 
-/* CANCEL */
+/* =========================================================
+   CANCEL
+========================================================= */
+
 .delivery-cancel-btn {
   border: 1px solid #d5dee8;
   background: #ffffff;
@@ -581,8 +606,13 @@
   color: #374151;
 }
 
+/* =========================================================
+   ACTIVE BUTTON EFFECT
+========================================================= */
+
 .delivery-view-btn:active,
 .delivery-edit-btn:active,
+.delivery-delete-btn:active,
 .delivery-save-btn:active,
 .delivery-cancel-btn:active {
   transform: translateY(1px);
@@ -652,7 +682,7 @@
 }
 
 /* =========================================================
-   MODAL OVERLAY
+   VIEW / EDIT MODAL OVERLAY
 ========================================================= */
 
 .medicine-delivery-modal-overlay {
@@ -670,7 +700,6 @@
 
 /* =========================================================
    VIEW / EDIT MODAL
-   DARK BLUE + WHITE THEME
 ========================================================= */
 
 .medicine-delivery-modal {
@@ -689,7 +718,6 @@
 
 /* =========================================================
    MODAL HEADER
-   DARK BLUE
 ========================================================= */
 
 .medicine-delivery-modal-header {
@@ -741,7 +769,6 @@
 
 /* =========================================================
    MODAL BODY
-   WHITE
 ========================================================= */
 
 .medicine-delivery-modal-body {
@@ -765,7 +792,6 @@
 
 /* =========================================================
    MODAL SECTIONS
-   DARK BLUE BOXES
 ========================================================= */
 
 .delivery-section {
@@ -838,7 +864,6 @@
 
 /* =========================================================
    DETAIL GRID
-   WHITE INNER BOXES
 ========================================================= */
 
 .delivery-detail-grid {
@@ -881,7 +906,6 @@
 
 /* =========================================================
    MEDICINE LIST
-   WHITE BOXES INSIDE DARK BLUE SECTION
 ========================================================= */
 
 .delivery-medicine-list {
@@ -978,7 +1002,6 @@
 
 /* =========================================================
    MONTHLY DELIVERY LIST
-   WHITE BOXES INSIDE DARK BLUE SECTION
 ========================================================= */
 
 .monthly-delivery-list {
@@ -1109,7 +1132,6 @@
 
 /* =========================================================
    MODAL FOOTER
-   DARK BLUE
 ========================================================= */
 
 .medicine-delivery-modal-footer {
@@ -1122,7 +1144,6 @@
   background: #0b2a4a;
 }
 
-/* FOOTER BUTTON */
 .delivery-secondary-btn {
   min-width: 82px;
   height: 38px;
@@ -1344,4 +1365,802 @@
     height: 30px;
     flex-basis: 30px;
   }
+}
+
+/* =========================================================
+   DELETE CONFIRMATION POPUP
+   TOP-RIGHT
+========================================================= */
+
+/*
+   IMPORTANT:
+   This is separate from the normal View/Edit modal.
+   It is intentionally transparent so the confirmation
+   card itself appears at the TOP-RIGHT.
+*/
+
+.medicine-delivery-notification-overlay {
+  position: fixed !important;
+  top: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  left: 0 !important;
+
+  width: 100vw !important;
+  height: 100vh !important;
+
+  z-index: 2147483646 !important;
+
+  display: flex !important;
+  align-items: flex-start !important;
+  justify-content: flex-end !important;
+
+  padding: 24px !important;
+
+  margin: 0 !important;
+
+  background: transparent !important;
+
+  pointer-events: none !important;
+
+  box-sizing: border-box !important;
+}
+
+.medicine-delivery-confirm-modal {
+  position: relative !important;
+
+  width: 430px !important;
+  max-width: calc(100vw - 48px) !important;
+
+  margin: 0 !important;
+  padding: 0 !important;
+
+  overflow: hidden !important;
+
+  background: #ffffff !important;
+
+  border: 1px solid #dbe5ee !important;
+  border-radius: 18px !important;
+
+  box-shadow:
+    0 24px 70px rgba(11, 42, 74, 0.24),
+    0 10px 28px rgba(11, 42, 74, 0.12) !important;
+
+  pointer-events: auto !important;
+
+  transform-origin: top right;
+
+  animation:
+    medicineDeliveryConfirmEnter
+    0.38s
+    cubic-bezier(0.22, 1, 0.36, 1)
+    both;
+}
+
+/* =========================================================
+   DELETE CONFIRMATION TOP ACCENT
+========================================================= */
+
+.medicine-delivery-confirm-modal::before {
+  content: "";
+
+  position: absolute;
+
+  top: 0;
+  left: 0;
+
+  width: 100%;
+  height: 4px;
+
+  background: #dc2626;
+
+  z-index: 2;
+}
+
+/* =========================================================
+   CONFIRM ICON
+========================================================= */
+
+.medicine-delivery-confirm-icon {
+  width: 48px;
+  height: 48px;
+
+  margin: 22px 22px 10px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 14px;
+
+  background: #fff1f1;
+
+  color: #dc2626;
+
+  font-size: 22px;
+  font-weight: 900;
+
+  box-shadow:
+    inset 0 0 0 1px #f7d0d0;
+}
+
+/* =========================================================
+   CONFIRM TITLE
+========================================================= */
+
+.medicine-delivery-confirm-modal h2 {
+  margin: 0 22px 7px;
+
+  color: #0b2a4a;
+
+  font-size: 18px;
+  line-height: 1.3;
+
+  font-weight: 800;
+}
+
+/* =========================================================
+   PATIENT NAME
+========================================================= */
+
+.confirm-patient-name {
+  margin: 0 22px 9px;
+
+  overflow-wrap: anywhere;
+
+  color: #263445;
+
+  font-size: 14px;
+  line-height: 1.45;
+
+  font-weight: 800;
+}
+
+/* =========================================================
+   DESCRIPTION
+========================================================= */
+
+.confirm-description {
+  margin: 0 22px 16px;
+
+  color: #64748b;
+
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+/* =========================================================
+   WARNING BOX
+========================================================= */
+
+.confirm-warning-box {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+
+  margin: 0 22px 20px;
+  padding: 12px 13px;
+
+  border: 1px solid #f5d7d7;
+  border-radius: 10px;
+
+  background: #fff8f8;
+
+  color: #7f1d1d;
+
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+/* =========================================================
+   WARNING ICON
+========================================================= */
+
+.confirm-warning-box > span:first-child {
+  flex: 0 0 auto;
+
+  color: #dc2626;
+
+  font-weight: 900;
+}
+
+/* =========================================================
+   CONFIRM ACTIONS
+========================================================= */
+
+.medicine-delivery-confirm-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+
+  gap: 9px;
+
+  padding: 15px 22px 20px;
+
+  border-top: 1px solid #edf2f6;
+
+  background: #ffffff;
+}
+
+/* =========================================================
+   CANCEL CONFIRM
+========================================================= */
+
+.delivery-confirm-cancel {
+  min-width: 82px;
+  height: 38px;
+
+  padding: 0 15px;
+
+  border: 1px solid #d5dee8;
+  border-radius: 8px;
+
+  background: #ffffff;
+
+  color: #475467;
+
+  font-family: inherit;
+
+  font-size: 12px;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease,
+    transform 0.15s ease;
+}
+
+.delivery-confirm-cancel:hover {
+  background: #f5f8fb;
+
+  border-color: #b8c5d1;
+
+  color: #0b2a4a;
+}
+
+/* =========================================================
+   DELETE CONFIRM
+========================================================= */
+
+.delivery-confirm-delete {
+  min-width: 125px;
+  height: 38px;
+
+  padding: 0 15px;
+
+  border: 1px solid #dc2626;
+  border-radius: 8px;
+
+  background: #dc2626;
+
+  color: #ffffff;
+
+  font-family: inherit;
+
+  font-size: 12px;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  box-shadow:
+    0 5px 14px rgba(220, 38, 38, 0.20);
+
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.15s ease,
+    box-shadow 0.2s ease;
+}
+
+.delivery-confirm-delete:hover {
+  background: #b91c1c;
+
+  border-color: #b91c1c;
+
+  transform: translateY(-1px);
+
+  box-shadow:
+    0 7px 18px rgba(220, 38, 38, 0.28);
+}
+
+.delivery-confirm-delete:active {
+  transform: translateY(1px);
+}
+
+.delivery-confirm-delete:disabled {
+  opacity: 0.6;
+
+  cursor: not-allowed;
+
+  transform: none;
+
+  box-shadow: none;
+}
+
+/* =========================================================
+   DELETE CONFIRMATION ANIMATION
+========================================================= */
+
+@keyframes medicineDeliveryConfirmEnter {
+  0% {
+    opacity: 0;
+
+    transform:
+      translate3d(28px, -18px, 0)
+      scale(0.96);
+  }
+
+  70% {
+    opacity: 1;
+
+    transform:
+      translate3d(-3px, 2px, 0)
+      scale(1.01);
+  }
+
+  100% {
+    opacity: 1;
+
+    transform:
+      translate3d(0, 0, 0)
+      scale(1);
+  }
+}
+
+/* =========================================================
+   DELETE CONFIRMATION MOBILE
+========================================================= */
+
+@media (max-width: 640px) {
+  .medicine-delivery-notification-overlay {
+    top: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    left: 0 !important;
+
+    width: 100vw !important;
+    height: 100vh !important;
+
+    padding: 14px !important;
+
+    align-items: flex-start !important;
+    justify-content: center !important;
+  }
+
+  .medicine-delivery-confirm-modal {
+    width: 100% !important;
+    max-width: 100% !important;
+
+    border-radius: 16px !important;
+  }
+
+  .medicine-delivery-confirm-icon {
+    margin: 20px 18px 9px;
+  }
+
+  .medicine-delivery-confirm-modal h2 {
+    margin-left: 18px;
+    margin-right: 18px;
+  }
+
+  .confirm-patient-name {
+    margin-left: 18px;
+    margin-right: 18px;
+  }
+
+  .confirm-description {
+    margin-left: 18px;
+    margin-right: 18px;
+  }
+
+  .confirm-warning-box {
+    margin-left: 18px;
+    margin-right: 18px;
+  }
+
+  .medicine-delivery-confirm-actions {
+    padding: 14px 18px 18px;
+
+    flex-direction: column-reverse;
+
+    align-items: stretch;
+  }
+
+  .delivery-confirm-cancel,
+  .delivery-confirm-delete {
+    width: 100%;
+  }
+}
+
+/* =========================================================
+   ADVANCED NOTIFICATION
+   SUCCESS / ERROR
+   FIXED TOP-RIGHT
+========================================================= */
+
+.medicine-delivery-toast {
+  position: fixed !important;
+
+  top: 24px !important;
+  right: 24px !important;
+
+  bottom: auto !important;
+  left: auto !important;
+
+  z-index: 2147483647 !important;
+
+  width: 430px !important;
+  max-width: calc(100vw - 32px) !important;
+
+  min-height: 96px;
+
+  display: flex;
+  align-items: flex-start;
+
+  gap: 14px;
+
+  padding: 18px 18px 21px;
+
+  overflow: hidden;
+
+  background: #ffffff;
+
+  border: 1px solid #dbe5ee;
+
+  border-radius: 18px;
+
+  box-shadow:
+    0 24px 70px rgba(11, 42, 74, 0.22),
+    0 8px 24px rgba(11, 42, 74, 0.10);
+
+  pointer-events: auto;
+
+  animation:
+    medicineDeliveryToastEnter
+    0.45s
+    cubic-bezier(0.22, 1, 0.36, 1)
+    both;
+}
+
+/* =========================================================
+   TOAST TOP ACCENT
+========================================================= */
+
+.medicine-delivery-toast::before {
+  content: "";
+
+  position: absolute;
+
+  top: 0;
+  left: 0;
+
+  width: 100%;
+  height: 4px;
+
+  background: #16a34a;
+}
+
+.medicine-delivery-toast.error::before {
+  background: #dc2626;
+}
+
+/* =========================================================
+   TOAST ICON
+========================================================= */
+
+.medicine-delivery-toast-icon {
+  width: 46px;
+  height: 46px;
+
+  min-width: 46px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  margin-top: 1px;
+
+  border-radius: 13px;
+
+  background: #eaf7ee;
+
+  color: #15803d;
+
+  font-size: 21px;
+
+  font-weight: 900;
+
+  box-shadow:
+    inset 0 0 0 1px #c9ebd3;
+
+  animation:
+    medicineDeliveryToastIcon
+    0.5s
+    ease-out
+    0.1s
+    both;
+}
+
+.medicine-delivery-toast.error .medicine-delivery-toast-icon {
+  background: #fff0ef;
+
+  color: #dc2626;
+
+  box-shadow:
+    inset 0 0 0 1px #f4c9c5;
+}
+
+/* =========================================================
+   TOAST CONTENT
+========================================================= */
+
+.medicine-delivery-toast-content {
+  flex: 1;
+
+  min-width: 0;
+
+  padding-top: 1px;
+}
+
+.medicine-delivery-toast-content strong {
+  display: block;
+
+  margin: 0 30px 5px 0;
+
+  color: #0b2a4a;
+
+  font-size: 15px;
+
+  line-height: 1.3;
+
+  font-weight: 800;
+}
+
+.medicine-delivery-toast-content p {
+  margin: 0;
+
+  color: #64748b;
+
+  font-size: 13px;
+
+  line-height: 1.5;
+
+  overflow-wrap: anywhere;
+}
+
+/* =========================================================
+   TOAST STATUS LABEL
+========================================================= */
+
+.medicine-delivery-toast-content::before {
+  content: "SUCCESS";
+
+  display: block;
+
+  margin-bottom: 4px;
+
+  color: #16a34a;
+
+  font-size: 9px;
+
+  line-height: 1;
+
+  font-weight: 900;
+
+  letter-spacing: 0.15em;
+}
+
+.medicine-delivery-toast.error .medicine-delivery-toast-content::before {
+  content: "ERROR";
+
+  color: #dc2626;
+}
+
+/* =========================================================
+   TOAST CLOSE
+========================================================= */
+
+.medicine-delivery-toast-close {
+  position: absolute;
+
+  top: 12px;
+  right: 12px;
+
+  width: 30px;
+  height: 30px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 0;
+
+  border: 0;
+
+  border-radius: 8px;
+
+  background: transparent;
+
+  color: #94a3b8;
+
+  font-size: 22px;
+
+  line-height: 1;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.medicine-delivery-toast-close:hover {
+  background: #eef3f7;
+
+  color: #0b2a4a;
+
+  transform: rotate(90deg);
+}
+
+/* =========================================================
+   TOAST PROGRESS BAR
+========================================================= */
+
+.medicine-delivery-toast-progress {
+  position: absolute;
+
+  left: 0;
+  bottom: 0;
+
+  width: 100%;
+  height: 3px;
+
+  background: #e8eef3;
+}
+
+.medicine-delivery-toast-progress::after {
+  content: "";
+
+  position: absolute;
+
+  left: 0;
+  top: 0;
+
+  width: 100%;
+  height: 100%;
+
+  background: #16a34a;
+
+  transform-origin: left center;
+
+  animation:
+    medicineDeliveryToastProgress
+    3.5s
+    linear
+    forwards;
+}
+
+.medicine-delivery-toast.error
+.medicine-delivery-toast-progress::after {
+  background: #dc2626;
+}
+
+/* =========================================================
+   TOAST ANIMATION
+========================================================= */
+
+@keyframes medicineDeliveryToastEnter {
+  0% {
+    opacity: 0;
+
+    transform:
+      translate3d(60px, -18px, 0)
+      scale(0.94);
+  }
+
+  60% {
+    opacity: 1;
+
+    transform:
+      translate3d(-4px, 2px, 0)
+      scale(1.01);
+  }
+
+  100% {
+    opacity: 1;
+
+    transform:
+      translate3d(0, 0, 0)
+      scale(1);
+  }
+}
+
+@keyframes medicineDeliveryToastIcon {
+  0% {
+    opacity: 0;
+
+    transform:
+      scale(0.5)
+      rotate(-15deg);
+  }
+
+  70% {
+    opacity: 1;
+
+    transform:
+      scale(1.12)
+      rotate(4deg);
+  }
+
+  100% {
+    opacity: 1;
+
+    transform:
+      scale(1)
+      rotate(0deg);
+  }
+}
+
+@keyframes medicineDeliveryToastProgress {
+  from {
+    transform: scaleX(1);
+  }
+
+  to {
+    transform: scaleX(0);
+  }
+}
+
+/* =========================================================
+   TOAST MOBILE
+========================================================= */
+
+@media (max-width: 640px) {
+  .medicine-delivery-toast {
+    top: 14px !important;
+
+    right: 14px !important;
+
+    left: 14px !important;
+
+    bottom: auto !important;
+
+    width: auto !important;
+
+    max-width: none !important;
+
+    min-height: 88px;
+
+    padding: 15px 15px 19px;
+
+    border-radius: 16px;
+  }
+
+  .medicine-delivery-toast-icon {
+    width: 40px;
+
+    height: 40px;
+
+    min-width: 40px;
+
+    border-radius: 11px;
+
+    font-size: 18px;
+  }
+
+  .medicine-delivery-toast-content strong {
+    font-size: 14px;
+  }
+
+  .medicine-delivery-toast-content p {
+    font-size: 12px;
+  }
+  .prescribed-month-text {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
 }

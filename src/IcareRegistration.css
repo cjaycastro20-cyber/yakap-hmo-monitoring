@@ -101,7 +101,8 @@
 
   background: #ffffff;
 
-  box-shadow: 0 3px 12px rgba(15, 23, 42, 0.05);
+  box-shadow:
+    0 3px 12px rgba(15, 23, 42, 0.05);
 
   box-sizing: border-box;
 }
@@ -156,25 +157,72 @@
 }
 
 
-/* ADD COMPANY BUTTON */
+/* =========================================================
+   ADD COMPANY BUTTON
+   Same blue style as Batch buttons
+========================================================= */
 
 .icare-company-row .icare-add-company-button {
   flex: 0 0 90px !important;
+
   width: 90px !important;
+
   height: 52px !important;
   min-height: 52px !important;
   max-height: 52px !important;
 
-  padding: 0 6px !important;
+  padding: 0 10px !important;
 
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
 
-  gap: 4px !important;
+  gap: 5px !important;
 
+  border: none !important;
   border-radius: 9px !important;
+
+  background: #2563eb !important;
+  color: #ffffff !important;
+
+  font-family: inherit;
+
   font-size: 9px !important;
+  font-weight: 700 !important;
+
+  cursor: pointer;
+
+  box-shadow:
+    0 4px 10px rgba(37, 99, 235, 0.18);
+
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.icare-company-row .icare-add-company-button:hover {
+  background: #1d4ed8 !important;
+  color: #ffffff !important;
+
+  transform: translateY(-1px);
+
+  box-shadow:
+    0 7px 15px rgba(37, 99, 235, 0.25);
+}
+
+.icare-company-row .icare-add-company-button:active {
+  transform: translateY(0);
+}
+
+.icare-company-row .icare-add-company-button:disabled {
+  opacity: 0.55;
+
+  cursor: not-allowed;
+
+  transform: none;
+
+  box-shadow: none;
 }
 
 
@@ -254,7 +302,7 @@
 
 
 /* =========================================================
-   SUMMARY CARDS
+   SUMMARY CARD
 ========================================================= */
 
 .icare-summary-card {
@@ -487,40 +535,174 @@
 
 
 /* =========================================================
+   BATCH BUTTONS
+========================================================= */
+
+.icare-table-actions .table-batch-button {
+  height: 36px;
+  min-height: 36px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 7px;
+
+  padding: 0 15px;
+
+  border: none !important;
+  border-radius: 9px;
+
+  background: #2563eb !important;
+  color: #ffffff !important;
+
+  font-family: inherit;
+
+  font-size: 11px;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  white-space: nowrap;
+
+  box-shadow:
+    0 4px 10px rgba(37, 99, 235, 0.18);
+
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.icare-table-actions .table-batch-button:hover {
+  background: #1d4ed8 !important;
+  color: #ffffff !important;
+
+  transform: translateY(-1px);
+
+  box-shadow:
+    0 7px 15px rgba(37, 99, 235, 0.25);
+}
+
+.icare-table-actions .table-batch-button:active {
+  transform: translateY(0);
+}
+
+.icare-table-actions .table-batch-button:disabled {
+  opacity: 0.55;
+
+  cursor: not-allowed;
+
+  transform: none;
+
+  box-shadow: none;
+}
+
+
+/* =========================================================
    TABLE
+   IMPORTANT:
+   .icare-table-wrapper is now the vertical scroll container.
+   This keeps the page from scrolling together with the table.
 ========================================================= */
 
 .icare-table-wrapper {
   width: 100%;
+  max-width: 100%;
+
+  /*
+    Controls the visible table area.
+    The table body scrolls inside this container.
+  */
+  height: calc(100vh - 310px);
+
+  min-height: 300px;
 
   overflow-x: auto;
-  overflow-y: visible;
+  overflow-y: auto;
+
+  -webkit-overflow-scrolling: touch;
+
+  scrollbar-width: thin;
+
+  position: relative;
+
+  background: #ffffff;
 }
 
-.icare-table {
-  width: 100%;
 
-  min-width: 1550px;
+/* =========================================================
+   TABLE SCROLLBAR
+========================================================= */
+
+.icare-table-wrapper::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.icare-table-wrapper::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+.icare-table-wrapper::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 10px;
+}
+
+.icare-table-wrapper::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+
+/* =========================================================
+   TABLE
+========================================================= */
+
+.icare-table {
+  width: max-content;
+
+  min-width: 100%;
 
   border-collapse: separate;
   border-spacing: 0;
 
-  table-layout: fixed;
+  table-layout: auto;
 
   font-size: 11px;
 }
 
+
+/* =========================================================
+   FROZEN TABLE HEADER
+========================================================= */
+
+.icare-table thead {
+  position: sticky;
+
+  top: 0;
+
+  z-index: 30;
+}
+
 .icare-table thead th {
+  position: sticky;
+
+  top: 0;
+
+  z-index: 31;
+
   height: 44px;
 
   padding: 9px 12px;
 
-  border-bottom: 1px solid #dbe3ec;
+  border-bottom: 1px solid #0b2a4a;
 
-  background: #f8fafc;
-  color: #475569;
+  background: #0b2a4a;
+
+  color: #ffffff;
 
   font-size: 10px;
+
   font-weight: 800;
 
   letter-spacing: 0.3px;
@@ -530,6 +712,24 @@
   white-space: nowrap;
 
   box-sizing: border-box;
+
+  /*
+    Prevents rows from visually appearing through
+    the frozen header.
+  */
+  box-shadow:
+    0 2px 5px rgba(15, 23, 42, 0.12);
+}
+
+
+/* =========================================================
+   TABLE BODY
+========================================================= */
+
+.icare-table tbody {
+  position: relative;
+
+  z-index: 1;
 }
 
 .icare-table tbody td {
@@ -573,79 +773,118 @@
 
 .icare-table th:nth-child(1),
 .icare-table td:nth-child(1) {
-  width: 90px;
+  width: 50px;
+  min-width: 50px;
+  text-align: center;
 }
 
 .icare-table th:nth-child(2),
 .icare-table td:nth-child(2) {
-  width: 50px;
-  text-align: center;
+  width: 150px;
+  min-width: 150px;
 }
 
 .icare-table th:nth-child(3),
 .icare-table td:nth-child(3) {
-  width: 125px;
+  width: 60px;
+  min-width: 60px;
+  text-align: center;
 }
 
 .icare-table th:nth-child(4),
 .icare-table td:nth-child(4) {
-  width: 110px;
+  width: 125px;
+  min-width: 125px;
 }
 
 .icare-table th:nth-child(5),
 .icare-table td:nth-child(5) {
-  width: 110px;
+  width: 120px;
+  min-width: 120px;
 }
 
 .icare-table th:nth-child(6),
 .icare-table td:nth-child(6) {
-  width: 110px;
+  width: 120px;
+  min-width: 120px;
 }
 
 .icare-table th:nth-child(7),
 .icare-table td:nth-child(7) {
-  width: 115px;
+  width: 120px;
+  min-width: 120px;
 }
 
 .icare-table th:nth-child(8),
 .icare-table td:nth-child(8) {
-  width: 220px;
+  width: 110px;
+  min-width: 110px;
+  text-align: center;
 }
 
 .icare-table th:nth-child(9),
 .icare-table td:nth-child(9) {
-  width: 85px;
-  text-align: center;
+  width: 220px;
+  min-width: 220px;
 }
 
 .icare-table th:nth-child(10),
 .icare-table td:nth-child(10) {
-  width: 155px;
+  width: 65px;
+  min-width: 65px;
   text-align: center;
 }
 
 .icare-table th:nth-child(11),
 .icare-table td:nth-child(11) {
-  width: 125px;
+  width: 140px;
+  min-width: 140px;
 }
 
 .icare-table th:nth-child(12),
 .icare-table td:nth-child(12) {
-  width: 110px;
+  width: 90px;
+  min-width: 90px;
   text-align: center;
 }
 
 .icare-table th:nth-child(13),
 .icare-table td:nth-child(13) {
-  width: 180px;
+  width: 160px;
+  min-width: 160px;
+  text-align: center;
 }
 
 .icare-table th:nth-child(14),
 .icare-table td:nth-child(14) {
-  width: 100px;
-  min-width: 100px;
-  max-width: 100px;
+  width: 120px;
+  min-width: 120px;
   text-align: center;
+}
+
+.icare-table th:nth-child(15),
+.icare-table td:nth-child(15) {
+  width: 110px;
+  min-width: 110px;
+  text-align: center;
+}
+
+.icare-table th:nth-child(16),
+.icare-table td:nth-child(16) {
+  width: 200px;
+  min-width: 200px;
+  max-width: 300px;
+  box-sizing: border-box;
+}
+
+.icare-table th:nth-child(17),
+.icare-table td:nth-child(17) {
+  width: 130px;
+  min-width: 130px;
+  max-width: 130px;
+  text-align: center;
+  white-space: nowrap;
+  box-sizing: border-box;
 }
 
 
@@ -665,6 +904,13 @@
 .address-cell,
 .remarks-cell {
   color: #64748b !important;
+}
+
+.remarks-cell {
+  white-space: normal !important;
+  word-break: break-word;
+  overflow: visible !important;
+  text-overflow: clip !important;
 }
 
 
@@ -769,11 +1015,24 @@
 ========================================================= */
 
 .patient-action-buttons {
+  width: 100%;
+
   display: flex;
   align-items: center;
   justify-content: center;
 
-  gap: 7px;
+  gap: 10px;
+
+  min-width: 120px;
+
+  white-space: nowrap;
+
+  box-sizing: border-box;
+}
+
+.patient-action-buttons button {
+  flex: 0 0 34px;
+  flex-shrink: 0;
 }
 
 .edit-patient-button,
@@ -800,14 +1059,12 @@
 
 .edit-patient-button {
   border: 1px solid #bfdbfe;
-
   background: #eff6ff;
   color: #2563eb;
 }
 
 .delete-patient-button {
   border: 1px solid #fecaca;
-
   background: #fef2f2;
   color: #dc2626;
 }
@@ -825,18 +1082,14 @@
 .edit-patient-button:hover {
   background: #2563eb;
   border-color: #2563eb;
-
   color: #ffffff;
-
   transform: translateY(-2px);
 }
 
 .delete-patient-button:hover {
   background: #dc2626;
   border-color: #dc2626;
-
   color: #ffffff;
-
   transform: translateY(-2px);
 }
 
@@ -853,6 +1106,7 @@
   height: 280px !important;
 
   text-align: center !important;
+
   vertical-align: middle !important;
 
   color: #64748b !important;
@@ -860,25 +1114,19 @@
 
 .icare-no-data-icon {
   margin-bottom: 10px;
-
   font-size: 34px;
-
   opacity: 0.45;
 }
 
 .icare-no-data strong {
   display: block;
-
   color: #475569;
-
   font-size: 14px;
 }
 
 .icare-no-data p {
   margin: 6px 0 0;
-
   color: #94a3b8;
-
   font-size: 11px;
 }
 
@@ -889,6 +1137,7 @@
 
 .add-patient-modal {
   position: fixed;
+
   inset: 0;
 
   z-index: 99999;
@@ -925,6 +1174,7 @@
   background: #ffffff;
 
   border: 1px solid #e2e8f0;
+
   border-radius: 20px;
 
   box-shadow:
@@ -954,12 +1204,18 @@
 @keyframes modalContentIn {
   from {
     opacity: 0;
-    transform: translateY(20px) scale(0.97);
+
+    transform:
+      translateY(20px)
+      scale(0.97);
   }
 
   to {
     opacity: 1;
-    transform: translateY(0) scale(1);
+
+    transform:
+      translateY(0)
+      scale(1);
   }
 }
 
@@ -1017,12 +1273,15 @@
   padding: 0;
 
   border: 1px solid #e2e8f0;
+
   border-radius: 9px;
 
   background: #f8fafc;
+
   color: #64748b;
 
   font-size: 22px;
+
   line-height: 1;
 
   cursor: pointer;
@@ -1066,6 +1325,7 @@
   padding: 20px;
 
   border: 1px solid #e2e8f0;
+
   border-radius: 14px;
 
   background: #ffffff;
@@ -1090,6 +1350,7 @@
   gap: 10px;
 
   margin-bottom: 18px;
+
   padding-bottom: 12px;
 
   border-bottom: 1px solid #eef2f7;
@@ -1108,6 +1369,7 @@
   border-radius: 8px;
 
   background: #eff6ff;
+
   color: #2563eb;
 
   font-size: 11px;
@@ -1167,6 +1429,7 @@
   color: #334155;
 
   font-size: 11px;
+
   font-weight: 700;
 }
 
@@ -1191,14 +1454,17 @@
   padding: 9px 11px;
 
   border: 1px solid #dbe3ec;
+
   border-radius: 9px;
 
   outline: none;
 
   background: #ffffff;
+
   color: #1e293b;
 
   font-family: inherit;
+
   font-size: 12px;
 
   box-sizing: border-box;
@@ -1230,7 +1496,6 @@
 
 .add-patient-field textarea {
   min-height: 85px;
-
   resize: vertical;
 }
 
@@ -1270,14 +1535,17 @@
   padding: 0 17px;
 
   border: 1px solid #dbe3ec;
+
   border-radius: 9px;
 
   background: #ffffff;
+
   color: #64748b;
 
   font-family: inherit;
 
   font-size: 11px;
+
   font-weight: 700;
 
   cursor: pointer;
@@ -1304,14 +1572,17 @@
   padding: 0 19px;
 
   border: none;
+
   border-radius: 9px;
 
   background: #2563eb;
+
   color: #ffffff;
 
   font-family: inherit;
 
   font-size: 11px;
+
   font-weight: 700;
 
   cursor: pointer;
@@ -1350,12 +1621,499 @@
 
 .add-patient-form::-webkit-scrollbar-thumb {
   background: #cbd5e1;
-
   border-radius: 10px;
 }
 
 .add-patient-form::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
+}
+
+
+/* =========================================================
+   BATCH MODAL
+========================================================= */
+
+.icare-batch-modal {
+  width: min(1100px, 94vw);
+  max-height: 92vh;
+}
+
+
+/* =========================================================
+   FILE UPLOAD AREA
+========================================================= */
+
+.batch-upload-area {
+  width: 100%;
+
+  padding: 20px;
+
+  border: 2px dashed #b8c7dc;
+
+  border-radius: 10px;
+
+  background: #f8faff;
+
+  transition: all 0.2s ease;
+}
+
+.batch-upload-area:hover {
+  border-color: #07347d;
+  background: #f3f7ff;
+}
+
+.batch-upload-area input[type="file"] {
+  width: 100%;
+
+  padding: 12px;
+
+  border: 1px solid #d5deeb;
+
+  border-radius: 7px;
+
+  background: #ffffff;
+
+  color: #172337;
+
+  font-size: 13px;
+
+  cursor: pointer;
+}
+
+.batch-upload-area input[type="file"]:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+
+/* =========================================================
+   SELECTED FILE
+========================================================= */
+
+.batch-selected-file {
+  display: flex;
+  align-items: center;
+
+  gap: 12px;
+
+  margin-top: 14px;
+
+  padding: 12px 14px;
+
+  border: 1px solid #d9e2ef;
+
+  border-radius: 8px;
+
+  background: #ffffff;
+}
+
+.batch-selected-file > span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 38px;
+  height: 38px;
+
+  border-radius: 8px;
+
+  background: #eef4ff;
+
+  font-size: 20px;
+}
+
+.batch-selected-file div {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.batch-selected-file strong {
+  color: #172337;
+  font-size: 13px;
+  word-break: break-word;
+}
+
+.batch-selected-file small {
+  color: #738198;
+  font-size: 11px;
+}
+
+
+/* =========================================================
+   UPLOAD NOTE
+========================================================= */
+
+.batch-upload-note {
+  display: flex;
+
+  gap: 6px;
+
+  margin-top: 12px;
+
+  padding: 12px 14px;
+
+  border-left: 4px solid #07347d;
+
+  border-radius: 6px;
+
+  background: #f3f7ff;
+
+  color: #536176;
+
+  font-size: 12px;
+
+  line-height: 1.6;
+}
+
+.batch-upload-note strong {
+  color: #07347d;
+  white-space: nowrap;
+}
+
+.batch-upload-note b {
+  color: #172337;
+}
+
+
+/* =========================================================
+   BATCH SUMMARY
+========================================================= */
+
+.batch-summary-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(3, 1fr);
+
+  gap: 12px;
+
+  margin-bottom: 18px;
+}
+
+.batch-summary-card {
+  display: flex;
+  flex-direction: column;
+
+  gap: 5px;
+
+  padding: 15px 16px;
+
+  border: 1px solid #dce4ef;
+
+  border-radius: 9px;
+
+  background: #ffffff;
+}
+
+.batch-summary-card span {
+  color: #718096;
+
+  font-size: 11px;
+
+  font-weight: 700;
+
+  letter-spacing: 0.4px;
+}
+
+.batch-summary-card strong {
+  color: #07347d;
+
+  font-size: 24px;
+
+  line-height: 1;
+}
+
+
+/* =========================================================
+   BATCH MESSAGE
+========================================================= */
+
+.batch-upload-message {
+  margin-bottom: 16px;
+
+  padding: 12px 14px;
+
+  border: 1px solid #cbdaf2;
+
+  border-radius: 7px;
+
+  background: #eef5ff;
+
+  color: #07347d;
+
+  font-size: 13px;
+
+  font-weight: 600;
+}
+
+
+/* =========================================================
+   RESULT SECTIONS
+========================================================= */
+
+.batch-result-section {
+  margin-top: 16px;
+
+  padding: 14px;
+
+  border: 1px solid #e0e6ef;
+
+  border-radius: 9px;
+
+  background: #fafbfd;
+}
+
+.batch-result-section h4 {
+  margin: 0 0 10px;
+
+  color: #172337;
+
+  font-size: 13px;
+
+  font-weight: 700;
+}
+
+.batch-result-list {
+  display: flex;
+  flex-direction: column;
+
+  gap: 7px;
+
+  max-height: 180px;
+
+  overflow-y: auto;
+}
+
+.batch-result-item {
+  display: grid;
+
+  grid-template-columns:
+    70px 1fr;
+
+  gap: 3px 10px;
+
+  padding: 10px 12px;
+
+  border-radius: 7px;
+
+  background: #ffffff;
+
+  font-size: 11px;
+}
+
+.batch-result-item span {
+  color: #718096;
+  font-weight: 600;
+}
+
+.batch-result-item strong {
+  color: #172337;
+}
+
+.batch-result-item small {
+  grid-column: 2;
+  color: #66758a;
+}
+
+.batch-result-item em {
+  grid-column: 2;
+  color: #9a6b00;
+  font-style: normal;
+}
+
+.batch-result-item.duplicate {
+  border-left: 3px solid #d6a300;
+}
+
+.batch-result-item.error {
+  border-left: 3px solid #c43d3d;
+}
+
+.batch-result-item.error em {
+  color: #b33434;
+}
+
+
+/* =========================================================
+   MORE TEXT
+========================================================= */
+
+.batch-more-text {
+  margin: 9px 0 0;
+
+  color: #718096;
+
+  font-size: 11px;
+
+  font-style: italic;
+}
+
+
+/* =========================================================
+   PREVIEW
+========================================================= */
+
+.batch-preview-section {
+  margin-top: 18px;
+}
+
+.batch-preview-section h4 {
+  margin: 0 0 10px;
+
+  color: #172337;
+
+  font-size: 13px;
+
+  font-weight: 700;
+}
+
+.batch-preview-wrapper {
+  max-height: 260px;
+
+  overflow: auto;
+
+  border: 1px solid #dce4ef;
+
+  border-radius: 8px;
+
+  background: #ffffff;
+}
+
+.batch-preview-table {
+  width: 100%;
+
+  min-width: 750px;
+
+  border-collapse: collapse;
+}
+
+.batch-preview-table th {
+  position: sticky;
+
+  top: 0;
+
+  z-index: 1;
+
+  padding: 10px 12px;
+
+  border-bottom: 1px solid #d8e1ee;
+
+  background: #07347d;
+
+  color: #ffffff;
+
+  text-align: left;
+
+  font-size: 10px;
+
+  font-weight: 700;
+
+  letter-spacing: 0.3px;
+}
+
+.batch-preview-table td {
+  padding: 9px 12px;
+
+  border-bottom: 1px solid #edf0f5;
+
+  color: #344054;
+
+  font-size: 11px;
+}
+
+.batch-preview-table tbody tr:hover {
+  background: #f7f9fc;
+}
+
+
+/* =========================================================
+   SAFE IMPORT POLICY
+========================================================= */
+
+.batch-upload-policy {
+  display: flex;
+  align-items: flex-start;
+
+  gap: 10px;
+
+  margin-top: 18px;
+
+  padding: 13px 15px;
+
+  border: 1px solid #cfdcf0;
+
+  border-radius: 8px;
+
+  background: #f5f8fd;
+}
+
+.batch-upload-policy > span {
+  font-size: 18px;
+  line-height: 1;
+}
+
+.batch-upload-policy div {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.batch-upload-policy strong {
+  color: #07347d;
+  font-size: 12px;
+}
+
+.batch-upload-policy p {
+  margin: 0;
+
+  color: #657389;
+
+  font-size: 11px;
+
+  line-height: 1.5;
+}
+
+
+/* =========================================================
+   DISABLED BUTTONS
+========================================================= */
+
+.add-patient-save:disabled {
+  opacity: 0.55;
+
+  cursor: not-allowed;
+
+  transform: none;
+}
+
+.add-patient-cancel:disabled {
+  opacity: 0.55;
+
+  cursor: not-allowed;
+}
+
+
+/* =========================================================
+   BATCH MODAL SCROLLBAR
+========================================================= */
+
+.icare-batch-modal .add-patient-form::-webkit-scrollbar {
+  width: 7px;
+}
+
+.icare-batch-modal .add-patient-form::-webkit-scrollbar-track {
+  background: #f1f4f8;
+  border-radius: 10px;
+}
+
+.icare-batch-modal .add-patient-form::-webkit-scrollbar-thumb {
+  background: #b8c5d8;
+  border-radius: 10px;
+}
+
+.icare-batch-modal .add-patient-form::-webkit-scrollbar-thumb:hover {
+  background: #8798b2;
 }
 
 
@@ -1417,6 +2175,17 @@
     width: 100%;
 
     justify-content: flex-start;
+
+    flex-wrap: wrap;
+  }
+
+  /*
+    Keep a usable table viewport on smaller screens.
+  */
+  .icare-table-wrapper {
+    height: calc(100vh - 350px);
+
+    min-height: 260px;
   }
 
   .add-patient-modal {
@@ -1483,7 +2252,9 @@
 
   .icare-company-row .icare-company-selector {
     height: 52px;
+
     min-height: 52px;
+
     max-height: 52px;
 
     padding: 6px 10px !important;
@@ -1495,7 +2266,9 @@
     width: 52px;
 
     height: 52px;
+
     min-height: 52px;
+
     max-height: 52px;
 
     padding: 0 8px;
@@ -1505,6 +2278,26 @@
 
   .icare-company-row .icare-add-company-button span {
     font-size: 14px;
+  }
+
+  /*
+    Mobile table gets its own scroll area.
+  */
+  .icare-table-wrapper {
+    height: calc(100vh - 390px);
+
+    min-height: 220px;
+
+    overflow-x: auto;
+    overflow-y: auto;
+  }
+
+  .icare-table thead th {
+    position: sticky;
+
+    top: 0;
+
+    z-index: 31;
   }
 
   .add-patient-section {
@@ -1522,6 +2315,442 @@
   .add-patient-cancel,
   .add-patient-save {
     width: 100%;
+  }
+
+}
+
+
+/* =========================================================
+   RESPONSIVE — BATCH UPLOAD
+========================================================= */
+
+@media (max-width: 900px) {
+
+  .icare-batch-modal {
+    width: 95vw;
+  }
+
+  .batch-summary-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .batch-upload-note {
+    flex-direction: column;
+  }
+
+  .batch-result-item {
+    grid-template-columns: 1fr;
+  }
+
+  .batch-result-item small,
+  .batch-result-item em {
+    grid-column: 1;
+  }
+
+}
+
+
+@media (max-width: 600px) {
+
+  .icare-table-actions .table-batch-button {
+    width: 100%;
+  }
+
+  .batch-upload-area {
+    padding: 14px;
+  }
+
+  .batch-selected-file {
+    align-items: flex-start;
+  }
+
+}
+
+
+/* =========================================================
+   ICARE NOTIFICATION / TOAST
+   Same design as Medicine Delivery
+========================================================= */
+
+.icare-toast {
+  position: fixed !important;
+
+  top: 24px !important;
+  right: 24px !important;
+  bottom: auto !important;
+  left: auto !important;
+
+  z-index: 2147483647 !important;
+
+  width: 430px;
+  max-width: calc(100vw - 48px);
+
+  min-height: 86px;
+
+  display: flex;
+  align-items: center;
+
+  gap: 13px;
+
+  padding: 15px 17px 18px 15px;
+
+  box-sizing: border-box;
+
+  border: 1px solid #e2e8f0;
+
+  border-radius: 18px;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 18px 45px rgba(15, 23, 42, 0.18),
+    0 5px 16px rgba(15, 23, 42, 0.08);
+
+  overflow: hidden;
+
+  animation:
+    icareToastEnter 0.38s
+    cubic-bezier(0.22, 1, 0.36, 1)
+    both;
+}
+
+
+/* SUCCESS TOP ACCENT */
+
+.icare-toast.success {
+  border-top: 4px solid #16a34a;
+}
+
+
+/* ERROR TOP ACCENT */
+
+.icare-toast.error {
+  border-top: 4px solid #dc2626;
+}
+
+
+/* =========================================================
+   TOAST ICON
+========================================================= */
+
+.icare-toast-icon {
+  width: 40px;
+  height: 40px;
+
+  flex: 0 0 40px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 12px;
+
+  font-size: 19px;
+  font-weight: 900;
+
+  animation:
+    icareToastIcon 0.45s
+    cubic-bezier(0.22, 1, 0.36, 1)
+    0.08s
+    both;
+}
+
+
+/* SUCCESS ICON */
+
+.icare-toast.success .icare-toast-icon {
+  background: #ecfdf5;
+  color: #16a34a;
+}
+
+
+/* ERROR ICON */
+
+.icare-toast.error .icare-toast-icon {
+  background: #fef2f2;
+  color: #dc2626;
+}
+
+
+/* =========================================================
+   TOAST CONTENT
+========================================================= */
+
+.icare-toast-content {
+  min-width: 0;
+
+  flex: 1;
+
+  padding-right: 3px;
+}
+
+.icare-toast-content strong {
+  display: block;
+
+  margin: 0 0 4px;
+
+  color: #172b4d;
+
+  font-size: 13px;
+  font-weight: 800;
+
+  line-height: 1.25;
+}
+
+.icare-toast-content p {
+  margin: 0;
+
+  color: #64748b;
+
+  font-size: 11px;
+  font-weight: 500;
+
+  line-height: 1.45;
+
+  overflow-wrap: anywhere;
+}
+
+
+/* =========================================================
+   SUCCESS / ERROR LABEL
+========================================================= */
+
+.icare-toast-content::before {
+  display: block;
+
+  margin-bottom: 3px;
+
+  font-size: 8px;
+  font-weight: 900;
+
+  letter-spacing: 1px;
+
+  line-height: 1;
+}
+
+.icare-toast.success .icare-toast-content::before {
+  content: "SUCCESS";
+  color: #16a34a;
+}
+
+.icare-toast.error .icare-toast-content::before {
+  content: "ERROR";
+  color: #dc2626;
+}
+
+
+/* =========================================================
+   TOAST CLOSE BUTTON
+========================================================= */
+
+.icare-toast-close {
+  width: 28px;
+  height: 28px;
+
+  flex: 0 0 28px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 0;
+
+  border: none;
+
+  border-radius: 8px;
+
+  background: transparent;
+
+  color: #94a3b8;
+
+  font-size: 21px;
+  font-weight: 400;
+
+  line-height: 1;
+
+  cursor: pointer;
+
+  transition:
+    background 0.18s ease,
+    color 0.18s ease,
+    transform 0.18s ease;
+}
+
+.icare-toast-close:hover {
+  background: #f1f5f9;
+
+  color: #334155;
+
+  transform: scale(1.05);
+}
+
+.icare-toast-close:active {
+  transform: scale(0.95);
+}
+
+
+/* =========================================================
+   TOAST PROGRESS BAR
+========================================================= */
+
+.icare-toast-progress {
+  position: absolute;
+
+  left: 0;
+  bottom: 0;
+
+  width: 100%;
+  height: 3px;
+
+  transform-origin: left center;
+
+  animation:
+    icareToastProgress 3.5s
+    linear
+    forwards;
+}
+
+
+/* SUCCESS PROGRESS */
+
+.icare-toast.success .icare-toast-progress {
+  background: #16a34a;
+}
+
+
+/* ERROR PROGRESS */
+
+.icare-toast.error .icare-toast-progress {
+  background: #dc2626;
+}
+
+
+/* =========================================================
+   TOAST ANIMATIONS
+========================================================= */
+
+@keyframes icareToastEnter {
+
+  0% {
+    opacity: 0;
+
+    transform:
+      translate3d(
+        35px,
+        -8px,
+        0
+      )
+      scale(0.96);
+  }
+
+  100% {
+    opacity: 1;
+
+    transform:
+      translate3d(
+        0,
+        0,
+        0
+      )
+      scale(1);
+  }
+
+}
+
+
+@keyframes icareToastIcon {
+
+  0% {
+    opacity: 0;
+
+    transform:
+      scale(0.65)
+      rotate(-8deg);
+  }
+
+  70% {
+    transform:
+      scale(1.08)
+      rotate(2deg);
+  }
+
+  100% {
+    opacity: 1;
+
+    transform:
+      scale(1)
+      rotate(0);
+  }
+
+}
+
+
+@keyframes icareToastProgress {
+
+  from {
+    transform: scaleX(1);
+  }
+
+  to {
+    transform: scaleX(0);
+  }
+
+}
+
+
+/* =========================================================
+   NOTIFICATION — MOBILE
+========================================================= */
+
+@media (max-width: 600px) {
+
+  .icare-toast {
+    top: 14px !important;
+    right: 14px !important;
+    left: 14px !important;
+
+    width: auto;
+    max-width: none;
+
+    min-height: 78px;
+
+    padding:
+      13px
+      14px
+      16px
+      13px;
+
+    border-radius: 15px;
+
+    gap: 10px;
+  }
+
+  .icare-toast-icon {
+    width: 36px;
+    height: 36px;
+
+    flex-basis: 36px;
+
+    border-radius: 10px;
+
+    font-size: 17px;
+  }
+
+  .icare-toast-content strong {
+    font-size: 12px;
+  }
+
+  .icare-toast-content p {
+    font-size: 10px;
+  }
+
+  .icare-toast-close {
+    width: 26px;
+    height: 26px;
+
+    flex-basis: 26px;
+
+    font-size: 19px;
   }
 
 }

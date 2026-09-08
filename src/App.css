@@ -40,6 +40,8 @@ body {
   min-height: 100vh;
   width: 100%;
   background: #f5f7fb;
+  position: relative;
+  overflow-x: hidden;
 }
 
 
@@ -74,6 +76,41 @@ body {
 
   box-shadow:
     5px 0 20px rgba(15, 23, 42, 0.08);
+
+  transform: translateX(0);
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+
+  transition:
+    transform 0.28s ease,
+    opacity 0.20s ease,
+    visibility 0.28s ease;
+}
+
+
+/* =========================================================
+   SIDEBAR HIDDEN
+========================================================= */
+
+.dashboard-layout.sidebar-hidden .sidebar,
+.sidebar.sidebar-hidden {
+  transform: translateX(-100%);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+
+/* =========================================================
+   SIDEBAR VISIBLE
+========================================================= */
+
+.dashboard-layout.sidebar-open .sidebar {
+  transform: translateX(0);
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
 }
 
 
@@ -308,9 +345,31 @@ body {
 
   margin-left: 250px;
 
+  width: calc(100% - 250px);
+
   min-height: 100vh;
 
   background: #f5f7fb;
+
+  transition:
+    margin-left 0.28s ease,
+    width 0.28s ease,
+    max-width 0.28s ease;
+}
+
+
+/* =========================================================
+   MAIN CONTENT - SIDEBAR HIDDEN
+========================================================= */
+
+.dashboard-layout.sidebar-hidden .main-content {
+  margin-left: 0 !important;
+
+  width: 100% !important;
+
+  max-width: 100% !important;
+
+  flex: 1 1 100%;
 }
 
 
@@ -353,6 +412,75 @@ body {
   font-weight: 700;
 }
 
+
+/* =========================================================
+   SIDEBAR MENU TOGGLE BUTTON
+========================================================= */
+
+.sidebar-toggle {
+  width: 40px;
+  height: 40px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  flex-shrink: 0;
+
+  padding: 0;
+  margin: 0;
+
+  border: none;
+
+  border-radius: 9px;
+
+  background: #eff6ff;
+
+  color: #2563eb;
+
+  cursor: pointer;
+
+  user-select: none;
+
+  position: relative;
+  z-index: 1100;
+
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    transform 0.15s ease,
+    box-shadow 0.2s ease;
+}
+
+.sidebar-toggle:hover {
+  background: #dbeafe;
+
+  color: #1d4ed8;
+
+  box-shadow:
+    0 3px 10px rgba(37, 99, 235, 0.10);
+}
+
+.sidebar-toggle:active {
+  transform: scale(0.94);
+}
+
+.sidebar-toggle:focus-visible {
+  outline: 2px solid #93c5fd;
+  outline-offset: 2px;
+}
+
+.sidebar-toggle svg {
+  display: block;
+
+  pointer-events: none;
+}
+
+
+/* =========================================================
+   OLD MENU SYMBOL SUPPORT
+========================================================= */
+
 .menu-symbol {
   width: 35px;
   height: 35px;
@@ -361,6 +489,8 @@ body {
   align-items: center;
   justify-content: center;
 
+  border: none;
+
   border-radius: 9px;
 
   background: #eff6ff;
@@ -368,6 +498,32 @@ body {
   color: #2563eb;
 
   font-size: 17px;
+
+  cursor: pointer;
+
+  user-select: none;
+
+  position: relative;
+  z-index: 1100;
+
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    transform 0.15s ease;
+}
+
+.menu-symbol:hover {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.menu-symbol:active {
+  transform: scale(0.94);
+}
+
+.menu-symbol:focus-visible {
+  outline: 2px solid #93c5fd;
+  outline-offset: 2px;
 }
 
 
@@ -1271,6 +1427,12 @@ body {
 
 .patient-table {
   width: 100%;
+
+  /*
+     Allows horizontal scrolling on narrow screens
+     while keeping the table header sticky.
+  */
+  overflow-x: auto;
 }
 
 .patient-table-header,
@@ -1304,6 +1466,19 @@ body {
   text-transform: uppercase;
 
   letter-spacing: 0.3px;
+
+  /*
+     FROZEN / STICKY HEADER
+     76px = dashboard topbar height
+  */
+  position: sticky;
+  top: 76px;
+
+  z-index: 80;
+
+  box-shadow:
+    0 1px 0 rgba(226, 232, 240, 0.95),
+    0 3px 8px rgba(15, 23, 42, 0.035);
 }
 
 .patient-table-row {
@@ -1316,6 +1491,8 @@ body {
   color: #475569;
 
   font-size: 10px;
+
+  background: #ffffff;
 }
 
 .patient-table-row:hover {
@@ -1429,20 +1606,6 @@ body {
 
 
 /* =========================================================
-   MEDICINE HEADER
-========================================================= */
-
-.medicine-header {
-  grid-template-columns:
-    1.5fr
-    1fr
-    1fr
-    0.75fr
-    1fr;
-}
-
-
-/* =========================================================
    DELIVERY HISTORY ICONS
 ========================================================= */
 
@@ -1510,9 +1673,12 @@ body {
   .journey-arrow {
     display: none;
   }
-
 }
 
+
+/* =========================================================
+   1050px
+========================================================= */
 
 @media (max-width: 1050px) {
 
@@ -1523,6 +1689,12 @@ body {
 
   .main-content {
     margin-left: 220px;
+    width: calc(100% - 220px);
+  }
+
+  .dashboard-layout.sidebar-hidden .main-content {
+    margin-left: 0 !important;
+    width: 100% !important;
   }
 
   .dashboard-content {
@@ -1536,9 +1708,12 @@ body {
   .dashboard-panels {
     grid-template-columns: 1fr;
   }
-
 }
 
+
+/* =========================================================
+   800px
+========================================================= */
 
 @media (max-width: 800px) {
 
@@ -1549,6 +1724,12 @@ body {
 
   .main-content {
     margin-left: 190px;
+    width: calc(100% - 190px);
+  }
+
+  .dashboard-layout.sidebar-hidden .main-content {
+    margin-left: 0 !important;
+    width: 100% !important;
   }
 
   .sidebar-logo {
@@ -1588,45 +1769,147 @@ body {
   .page-search {
     width: 100%;
   }
-
 }
 
 
+/* =========================================================
+   650px - MOBILE
+========================================================= */
+
 @media (max-width: 650px) {
+
+  .dashboard-layout {
+    display: block;
+
+    min-height: 100vh;
+
+    width: 100%;
+  }
+
+
+  /* -------------------------------------------------------
+     NORMAL MOBILE SIDEBAR
+  ------------------------------------------------------- */
 
   .sidebar {
     position: relative;
+
+    left: auto;
+    top: auto;
+    bottom: auto;
 
     width: 100%;
     min-width: 100%;
 
     min-height: auto;
+
+    transform: translateX(0);
+
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+
+    z-index: 1000;
   }
 
-  .dashboard-layout {
+
+  /* -------------------------------------------------------
+     HIDDEN MOBILE SIDEBAR
+     FULLY INACCESSIBLE
+  ------------------------------------------------------- */
+
+  .dashboard-layout.sidebar-hidden .sidebar,
+  .sidebar.sidebar-hidden {
+
+    position: fixed;
+
+    left: 0;
+    top: 0;
+    bottom: 0;
+
+    width: 250px;
+    min-width: 250px;
+
+    min-height: 100vh;
+
+    transform: translateX(-100%);
+
+    opacity: 0;
+
+    visibility: hidden;
+
+    pointer-events: none;
+
+    z-index: 1000;
+  }
+
+
+  /* -------------------------------------------------------
+     MOBILE MAIN CONTENT
+  ------------------------------------------------------- */
+
+  .main-content,
+  .dashboard-layout.sidebar-hidden .main-content {
+
+    margin-left: 0 !important;
+
+    width: 100% !important;
+
+    max-width: 100% !important;
+
+    min-width: 0;
+  }
+
+
+  /* -------------------------------------------------------
+     MOBILE SIDEBAR CONTENT
+  ------------------------------------------------------- */
+
+  .sidebar-nav {
     display: block;
   }
 
-  .main-content {
-    margin-left: 0;
-  }
-
-  .sidebar-nav {
-    display: none;
-  }
-
   .sidebar-care {
-    display: none;
+    display: block;
   }
+
+
+  /* -------------------------------------------------------
+     TOPBAR
+  ------------------------------------------------------- */
 
   .dashboard-topbar {
     position: relative;
+
+    width: 100%;
+
+    padding: 0 14px;
   }
+
+
+  /* -------------------------------------------------------
+     TOGGLE BUTTON
+  ------------------------------------------------------- */
+
+  .sidebar-toggle {
+    width: 38px;
+    height: 38px;
+  }
+
+
+  /* -------------------------------------------------------
+     HEADINGS
+  ------------------------------------------------------- */
 
   .dashboard-heading h1,
   .page-heading h1 {
     font-size: 20px;
   }
+
+
+  /* -------------------------------------------------------
+     USER
+  ------------------------------------------------------- */
 
   .dashboard-user {
     gap: 6px;
@@ -1649,8 +1932,15 @@ body {
     height: 32px;
   }
 
+
+  /* -------------------------------------------------------
+     YAKAP REGISTRATION TABLE
+  ------------------------------------------------------- */
+
   .patient-table {
     overflow-x: auto;
+
+    -webkit-overflow-scrolling: touch;
   }
 
   .patient-table-header,
@@ -1658,15 +1948,78 @@ body {
     min-width: 700px;
   }
 
+  .patient-table-header {
+    position: sticky;
+
+    top: 0;
+
+    z-index: 80;
+  }
+
+
+  /* -------------------------------------------------------
+     MEDICINE DELIVERY TABLE
+     
+     NOTE:
+     Scrolling/sticky behavior for the actual Medicine
+     Delivery table is handled by its own CSS.
+  ------------------------------------------------------- */
+
+
+  /* -------------------------------------------------------
+     TELECONSULT TABLE
+     
+     NOTE:
+     Scrolling/sticky behavior for the actual Teleconsult
+     table is handled by Teleconsult.css.
+  ------------------------------------------------------- */
+
+
+  /* -------------------------------------------------------
+     MINI TABLE
+  ------------------------------------------------------- */
+
   .mini-table {
     overflow-x: auto;
+
+    -webkit-overflow-scrolling: touch;
   }
 
   .mini-header,
   .mini-row {
     min-width: 500px;
   }
+}
 
+
+/* =========================================================
+   LARGE SCREEN FULL WIDTH SUPPORT
+========================================================= */
+
+@media (min-width: 651px) {
+
+  .dashboard-layout.sidebar-hidden .main-content {
+    margin-left: 0 !important;
+
+    width: 100% !important;
+
+    max-width: 100% !important;
+  }
+}
+
+
+/* =========================================================
+   ACCESSIBILITY / REDUCED MOTION
+========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+
+  .sidebar,
+  .main-content,
+  .sidebar-toggle,
+  .menu-symbol {
+    transition: none !important;
+  }
 }
 
 

@@ -294,32 +294,92 @@
 }
 
 /* =========================================================
-   TABLE
+   TABLE WRAPPER
+   VERTICAL + HORIZONTAL SCROLL
 ========================================================= */
 
 .teleconsult-table-wrapper {
+  position: relative;
   width: 100%;
+  max-width: 100%;
+  max-height: calc(100vh - 330px);
   overflow-x: auto;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: #164a73 #e7ecf1;
 }
+
+/* =========================================================
+   TABLE WRAPPER SCROLLBAR
+========================================================= */
+
+.teleconsult-table-wrapper::-webkit-scrollbar {
+  width: 9px;
+  height: 9px;
+}
+
+.teleconsult-table-wrapper::-webkit-scrollbar-track {
+  background: #e7ecf1;
+}
+
+.teleconsult-table-wrapper::-webkit-scrollbar-thumb {
+  background: #164a73;
+  border-radius: 999px;
+}
+
+.teleconsult-table-wrapper::-webkit-scrollbar-thumb:hover {
+  background: #0b2a4a;
+}
+
+/* =========================================================
+   TABLE
+========================================================= */
 
 .teleconsult-table {
-  width: 100%;
+  width: max-content;
   min-width: 1900px;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
 }
 
+/* =========================================================
+   FROZEN TABLE HEADER
+   ONLY TH IS STICKY
+========================================================= */
+
 .teleconsult-table th {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+
   padding: 13px 12px;
+
   background: #0b2a4a;
+
   border-bottom: 1px solid #1b3b5c;
+
   color: #ffffff;
+
   font-size: 10px;
   font-weight: 800;
+
   letter-spacing: 0.06em;
+
   text-align: left;
+
   text-transform: uppercase;
+
   white-space: nowrap;
+
+  box-sizing: border-box;
+
+  box-shadow: 0 1px 0 #1b3b5c;
 }
+
+/* =========================================================
+   TABLE BODY
+========================================================= */
 
 .teleconsult-table td {
   padding: 13px 12px;
@@ -1797,7 +1857,7 @@
 }
 
 /* =========================================================
-   ★ FINAL COLOR OVERRIDE
+   FINAL COLOR OVERRIDE
    ONLY THE PER-SECTION BACKGROUNDS
 ========================================================= */
 
@@ -1830,7 +1890,6 @@
   color: #dbe7f2 !important;
 }
 
-
 /* ---------------------------------------------------------
    VIEW - MONTHLY DELIVERIES
 --------------------------------------------------------- */
@@ -1859,7 +1918,6 @@
   .teleconsult-section-header p {
   color: #dbe7f2 !important;
 }
-
 
 /* ---------------------------------------------------------
    VIEW - MEDICINE
@@ -1890,7 +1948,6 @@
   color: #dbe7f2 !important;
 }
 
-
 /* ---------------------------------------------------------
    EDIT - PATIENT DETAILS
 --------------------------------------------------------- */
@@ -1902,7 +1959,6 @@
   background: #0b2a4a !important;
   border-color: #0b2a4a !important;
 }
-
 
 /* ---------------------------------------------------------
    EDIT - MONTHLY DELIVERIES
@@ -1916,7 +1972,6 @@
   border-color: #0b2a4a !important;
 }
 
-
 /* ---------------------------------------------------------
    EDIT - MEDICINE
 --------------------------------------------------------- */
@@ -1929,7 +1984,6 @@
   border-color: #0b2a4a !important;
 }
 
-
 /* =========================================================
    EDIT SECTION HEADERS - WHITE
 ========================================================= */
@@ -1937,29 +1991,23 @@
 .teleconsult-edit-modal
   .teleconsult-section:has(.teleconsult-detail-grid)
   .teleconsult-section-header h3,
-
 .teleconsult-edit-modal
   .teleconsult-section:has(.teleconsult-delivery-edit-list)
   .teleconsult-section-header h3,
-
 .teleconsult-edit-modal
   .teleconsult-section:has(.teleconsult-medicine-editor)
   .teleconsult-section-header h3,
-
 .teleconsult-edit-modal
   .teleconsult-form-section:has(.teleconsult-detail-grid)
   .teleconsult-form-section-header h3,
-
 .teleconsult-edit-modal
   .teleconsult-form-section:has(.teleconsult-delivery-edit-list)
   .teleconsult-form-section-header h3,
-
 .teleconsult-edit-modal
   .teleconsult-form-section:has(.teleconsult-medicine-editor)
   .teleconsult-form-section-header h3 {
   color: #ffffff !important;
 }
-
 
 /* =========================================================
    EDIT SECTION DESCRIPTION - LIGHT WHITE
@@ -1968,29 +2016,23 @@
 .teleconsult-edit-modal
   .teleconsult-section:has(.teleconsult-detail-grid)
   .teleconsult-section-header p,
-
 .teleconsult-edit-modal
   .teleconsult-section:has(.teleconsult-delivery-edit-list)
   .teleconsult-section-header p,
-
 .teleconsult-edit-modal
   .teleconsult-section:has(.teleconsult-medicine-editor)
   .teleconsult-section-header p,
-
 .teleconsult-edit-modal
   .teleconsult-form-section:has(.teleconsult-detail-grid)
   .teleconsult-form-section-header p,
-
 .teleconsult-edit-modal
   .teleconsult-form-section:has(.teleconsult-delivery-edit-list)
   .teleconsult-form-section-header p,
-
 .teleconsult-edit-modal
   .teleconsult-form-section:has(.teleconsult-medicine-editor)
   .teleconsult-form-section-header p {
   color: #dbe7f2 !important;
 }
-
 
 /* =========================================================
    KEEP ALL INNER BOXES WHITE
@@ -2024,12 +2066,12 @@
   background: #ffffff !important;
 }
 
-
 /* =========================================================
    RESPONSIVE - 1100
 ========================================================= */
 
 @media (max-width: 1100px) {
+
   .teleconsult-summary-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -2069,6 +2111,7 @@
   .teleconsult-delivery-edit-card > .teleconsult-form-grid {
     width: 100%;
   }
+
 }
 
 /* =========================================================
@@ -2076,6 +2119,7 @@
 ========================================================= */
 
 @media (max-width: 850px) {
+
   .teleconsult-header {
     flex-direction: column;
   }
@@ -2110,6 +2154,15 @@
   .teleconsult-delivery-list {
     grid-template-columns: 1fr;
   }
+
+  /* =======================================================
+     TABLE SCROLL - TABLE AREA ONLY
+  ======================================================= */
+
+  .teleconsult-table-wrapper {
+    max-height: calc(100vh - 330px);
+  }
+
 }
 
 /* =========================================================
@@ -2117,6 +2170,7 @@
 ========================================================= */
 
 @media (max-width: 650px) {
+
   .teleconsult-page {
     padding: 15px;
   }
@@ -2149,6 +2203,16 @@
 
   .teleconsult-search-box {
     width: 100%;
+  }
+
+  /* =======================================================
+     MOBILE TABLE SCROLL
+  ======================================================= */
+
+  .teleconsult-table-wrapper {
+    max-height: calc(100vh - 285px);
+    overflow-x: auto;
+    overflow-y: auto;
   }
 
   .teleconsult-modal-header {
@@ -2235,6 +2299,7 @@
     align-items: flex-start;
     flex-direction: column;
   }
+
 }
 
 /* =========================================================
@@ -2242,6 +2307,7 @@
 ========================================================= */
 
 @media (max-width: 420px) {
+
   .teleconsult-page {
     padding: 11px;
   }
@@ -2254,6 +2320,14 @@
     width: 42px;
     height: 42px;
     min-width: 42px;
+  }
+
+  /* =======================================================
+     SMALL MOBILE TABLE SCROLL
+  ======================================================= */
+
+  .teleconsult-table-wrapper {
+    max-height: calc(100vh - 265px);
   }
 
   .teleconsult-modal-overlay {
@@ -2275,4 +2349,5 @@
     flex: 1;
     padding: 0 10px;
   }
+
 }
