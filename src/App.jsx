@@ -36,7 +36,8 @@ const ALLOWED_EMAILS = [
   "1lifejayvee@gmail.com",
 ].map((email) => email.toLowerCase());
 
-const API_URL = "http://localhost:5000";
+const API_URL =
+  import.meta.env.VITE_API_URL || "http://localhost:5000";
 
 
 const Icon = ({ name, size = 20, strokeWidth = 1.9 }) => {

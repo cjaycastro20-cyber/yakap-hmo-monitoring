@@ -34,14 +34,22 @@ const pool = mysql.createPool({
   port: Number(process.env.DB_PORT || 3306),
   user: process.env.DB_USER || "root",
   password: process.env.DB_PASSWORD || "",
-  database:
-    process.env.DB_NAME || "yakap_monitoring",
+  database: process.env.DB_NAME || "yakap_monitoring",
 
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,
 
   timezone: "local",
+
+  // ============================================================
+  // MYSQL SSL
+  // Allows Cloud SQL/self-signed certificate chain
+  // ============================================================
+  ssl: {
+    minVersion: "TLSv1.2",
+    rejectUnauthorized: false,
+  },
 });
 
 // ============================================================
