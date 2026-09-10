@@ -36,7 +36,7 @@ const DEFAULT_MEDICINE_MONTHS = [
 
 const TELECONSULT_STATUSES = [
   "Call Done",
-  "--",
+  "Not Available",
 ];
 
 const DELIVERY_STATUSES = [
