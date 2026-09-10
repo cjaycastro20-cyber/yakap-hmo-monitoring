@@ -739,86 +739,103 @@ function Teleconsult() {
       );
     };
 
-  /* =======================================================
-     LOAD COMPLETED ICARE PATIENTS FROM SQL / API
-  ======================================================= */
+  /* =========================================================
+   LABEL: ICARE FPE DONE / COMPLETED → TELECONSULT
+   SOURCE: SQL / TiDB Cloud API
+   ========================================================= */
 
-  useEffect(() => {
-    let cancelled = false;
+useEffect(() => {
+  let cancelled = false;
 
-    const loadCompletedIcarePatients =
-      async () => {
-        try {
-          const response =
-            await fetch(
-              `${API_URL}/api/patients`
-            );
-
-          if (!response.ok) {
-            throw new Error(
-              `Failed to load ICARE patients: ${response.status}`
-            );
-          }
-
-          const patients =
-            await response.json();
-
-          if (cancelled) {
-            return;
-          }
-
-          const completed =
-            Array.isArray(patients)
-              ? patients.filter(
-                  (patient) => {
-                    const fpe =
-                      getIcareValue(
-                        patient,
-                        "fpe"
-                      );
-
-                    return (
-                      String(
-                        fpe || ""
-                      )
-                        .trim()
-                        .toUpperCase() ===
-                      "COMPLETED"
-                    );
-                  }
-                )
-              : [];
-
-          setIcareCompletedPatients(
-            completed
-          );
-        } catch (error) {
-          console.error(
-            "Unable to load completed ICARE patients:",
-            error
-          );
-
-          if (!cancelled) {
-            setIcareCompletedPatients(
-              []
-            );
-          }
-        }
-      };
-
-    loadCompletedIcarePatients();
-
-    const interval =
-      setInterval(
-        loadCompletedIcarePatients,
-        5000
+  const loadIcarePatients = async () => {
+    try {
+      const response = await fetch(
+        `${API_URL}/api/patients`
       );
 
-    return () => {
-      cancelled = true;
-      clearInterval(interval);
-    };
-  }, []);
+      if (!response.ok) {
+        throw new Error(
+          `Failed to load ICARE patients: ${response.status}`
+        );
+      }
+
+      const result = await response.json();
+
+      console.log(
+        "ICARE API RESULT:",
+        result
+      );
+
+      if (
+        !result?.success ||
+        !Array.isArray(result.data)
+      ) {
+        throw new Error(
+          result?.message ||
+            "Invalid patient data received from API."
+        );
+      }
+
+      if (cancelled) return;
+
+      /* =====================================================
+         LABEL: FPE STATUS
+         
+         DONE      → APPEAR IN TELECONSULT
+         COMPLETED → APPEAR IN TELECONSULT
+         ===================================================== */
+
+      const eligiblePatients =
+        result.data.filter((patient) => {
+          const fpe = String(
+            getIcareValue(
+              patient,
+              "fpe"
+            ) || ""
+          )
+            .trim()
+            .toUpperCase();
+
+          return (
+            fpe === "DONE" ||
+            fpe === "COMPLETED"
+          );
+        });
+
+      console.log(
+        "ICARE DONE/COMPLETED PATIENTS:",
+        eligiblePatients
+      );
+
+      setIcareCompletedPatients(
+        eligiblePatients
+      );
+    } catch (error) {
+      console.error(
+        "Unable to load ICARE patients:",
+        error
+      );
+
+      if (!cancelled) {
+        setIcareCompletedPatients([]);
+      }
+    }
+  };
+
+  // LABEL: INITIAL LOAD
+  loadIcarePatients();
+
+  // LABEL: AUTO REFRESH EVERY 5 SECONDS
+  const interval = setInterval(
+    loadIcarePatients,
+    5000
+  );
+
+  return () => {
+    cancelled = true;
+    clearInterval(interval);
+  };
+}, []);
 
   /* =======================================================
      LOAD TELECONSULT FROM FIRESTORE
