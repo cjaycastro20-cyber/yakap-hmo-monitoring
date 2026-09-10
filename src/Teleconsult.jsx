@@ -10,9 +10,17 @@ import db from "./firebase/firestore";
 import "./Teleconsult.css";
 
 /* =========================================================
+   API
+========================================================= */
+
+const API_URL =
+  import.meta.env.VITE_API_URL || "http://localhost:5000";
+
+/* =========================================================
    STORAGE
    Medicine month UI settings are stored in Firestore.
-   Patient / Teleconsult / Company business data are Firestore.
+   Patient / ICARE business data are loaded from API / SQL.
+   Teleconsult / Company business data remain in Firestore.
 ========================================================= */
 
 /* =========================================================
@@ -732,55 +740,84 @@ function Teleconsult() {
     };
 
   /* =======================================================
-     LOAD ICARE FROM FIRESTORE
+     LOAD COMPLETED ICARE PATIENTS FROM SQL / API
   ======================================================= */
 
   useEffect(() => {
-    const patientsRef =
-      collection(
-        db,
-        "icarePatients"
-      );
+    let cancelled = false;
 
-    const unsubscribe =
-      onSnapshot(
-        patientsRef,
-        (snapshot) => {
-          const patients =
-            snapshot.docs.map(
-              (docSnapshot) => ({
-                id:
-                  docSnapshot.id,
-                ...docSnapshot.data(),
-              })
+    const loadCompletedIcarePatients =
+      async () => {
+        try {
+          const response =
+            await fetch(
+              `${API_URL}/api/patients`
             );
 
-          const completed = patients.filter((patient) => {
-  const fpe = getIcareValue(patient, "fpe");
+          if (!response.ok) {
+            throw new Error(
+              `Failed to load ICARE patients: ${response.status}`
+            );
+          }
 
-  return ["DONE", "COMPLETED"].includes(
-    String(fpe || "").trim().toUpperCase()
-  );
-});
+          const patients =
+            await response.json();
+
+          if (cancelled) {
+            return;
+          }
+
+          const completed =
+            Array.isArray(patients)
+              ? patients.filter(
+                  (patient) => {
+                    const fpe =
+                      getIcareValue(
+                        patient,
+                        "fpe"
+                      );
+
+                    return (
+                      String(
+                        fpe || ""
+                      )
+                        .trim()
+                        .toUpperCase() ===
+                      "COMPLETED"
+                    );
+                  }
+                )
+              : [];
 
           setIcareCompletedPatients(
             completed
           );
-        },
-        (error) => {
+        } catch (error) {
           console.error(
-            "Error loading ICARE patients from Firestore:",
+            "Unable to load completed ICARE patients:",
             error
           );
 
-          setIcareCompletedPatients(
-            []
-          );
+          if (!cancelled) {
+            setIcareCompletedPatients(
+              []
+            );
+          }
         }
+      };
+
+    loadCompletedIcarePatients();
+
+    const interval =
+      setInterval(
+        loadCompletedIcarePatients,
+        5000
       );
 
-    return () =>
-      unsubscribe();
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
   }, []);
 
   /* =======================================================
@@ -1205,17 +1242,18 @@ function Teleconsult() {
               ),
 
             contactNo:
-  extra.contactNo ??
-  (
-    getIcareValue(
-      icarePatient,
-      "contactNumber"
-    ) ||
-    getIcareValue(
-      icarePatient,
-      "contactNo"
-    )
-  ),
+              extra.contactNo ??
+              (
+                getIcareValue(
+                  icarePatient,
+                  "contactNumber"
+                ) ||
+                getIcareValue(
+                  icarePatient,
+                  "contactNo"
+                )
+              ),
+
             dateOfCall:
               extra.dateOfCall ||
               "",
@@ -1306,29 +1344,29 @@ function Teleconsult() {
     ]);
 
   /* =======================================================
-   SUMMARY — RESPECTS SELECTED COMPANY
-======================================================= */
+     SUMMARY — RESPECTS SELECTED COMPANY
+  ======================================================= */
 
-const totalPatientEndorsed =
-  filteredPatients.length;
+  const totalPatientEndorsed =
+    filteredPatients.length;
 
-const totalCallDone =
-  filteredPatients.filter(
-    (patient) =>
-      patient.status === "Call Done"
-  ).length;
+  const totalCallDone =
+    filteredPatients.filter(
+      (patient) =>
+        patient.status === "Call Done"
+    ).length;
 
-const totalNotAvailable =
-  filteredPatients.filter(
-    (patient) =>
-      patient.status === "Not Available"
-  ).length;
+  const totalNotAvailable =
+    filteredPatients.filter(
+      (patient) =>
+        patient.status === "Not Available"
+    ).length;
 
-const totalMedicineDelivery =
-  filteredPatients.filter(
-    (patient) =>
-      patient.medicineDelivery === "Yes"
-  ).length;
+  const totalMedicineDelivery =
+    filteredPatients.filter(
+      (patient) =>
+        patient.medicineDelivery === "Yes"
+    ).length;
 
   /* =======================================================
      MEDICINE SEARCH
