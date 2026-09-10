@@ -1352,34 +1352,37 @@ function IcareRegistration({
         }
 
 
-        const deletedSet =
-          new Set(
-            selectedPatients.map(
-              (patient) =>
-                String(
-                  patient.id
-                )
-            )
-          );
+        // ----------------------------------------------------
+// REFRESH PATIENT LIST AFTER BULK DELETE
+// ----------------------------------------------------
+
+// Remove deleted records immediately from the current page
+const deletedSet =
+  new Set(
+    selectedPatients.map(
+      (patient) =>
+        String(patient.id)
+    )
+  );
+
+setAddedPatients(
+  (prev) =>
+    prev.filter(
+      (patient) =>
+        !deletedSet.has(
+          String(patient.id)
+        )
+    )
+);
+
+// Reload the latest records from MySQL
+await loadPatients();
 
 
-        setAddedPatients(
-          (prev) =>
-            prev.filter(
-              (patient) =>
-                !deletedSet.has(
-                  String(
-                    patient.id
-                  )
-                )
-            )
-        );
-
-
-        for (
-          const patient of
-          selectedPatients
-        ) {
+for (
+  const patient of
+  selectedPatients
+) {
 
           await logAudit(
             "DELETE",
