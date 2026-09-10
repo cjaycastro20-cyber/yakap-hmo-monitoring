@@ -3833,8 +3833,8 @@ function IcareRegistration({
                         Select
                       </option>
 
-                      <option value="DONE">
-                        DONE
+                      <option value="COMPLETED">
+                        COMPLETED
                       </option>
 
                       <option value="PENDING">
