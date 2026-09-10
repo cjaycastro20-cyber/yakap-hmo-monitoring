@@ -689,4 +689,29 @@
     left: 12px;
     width: auto;
   }
+  .deleted-bulk-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.deleted-permanent-selected {
+  border: none;
+  background: #dc2626;
+  color: white;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.deleted-permanent-selected:hover {
+  background: #b91c1c;
+}
+
+.deleted-permanent-selected:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
 }

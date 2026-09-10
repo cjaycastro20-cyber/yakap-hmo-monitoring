@@ -10,7 +10,6 @@ import {
   doc,
   onSnapshot,
   serverTimestamp,
-  updateDoc,
   writeBatch,
 } from "firebase/firestore";
 
@@ -19,6 +18,7 @@ import db from "./firebase/firestore";
 
 import {
   logRestoreAudit,
+  logAudit,
 } from "./auditLog.js";
 
 import "./DeletedRecords.css";
@@ -55,6 +55,9 @@ function DeletedRecords() {
     useState([]);
 
   const [isRestoringSelected, setIsRestoringSelected] =
+    useState(false);
+
+  const [isDeletingSelected, setIsDeletingSelected] =
     useState(false);
 
   // =======================================================
@@ -1009,6 +1012,190 @@ function DeletedRecords() {
     };
 
   // =======================================================
+  // BULK PERMANENT DELETE
+  //
+  // IMPORTANT:
+  // This deletes ONLY the selected backup entries
+  // from deletedRecords.
+  //
+  // It does NOT restore or delete the original patient.
+  // =======================================================
+
+  const handleBulkPermanentDelete =
+    async () => {
+      const recordsToDelete =
+        deletedRecords.filter(
+          (record) =>
+            selectedRecordIds.includes(
+              record.id
+            )
+        );
+
+      if (
+        recordsToDelete.length ===
+        0
+      ) {
+        showNotification(
+          "error",
+          "NO RECORDS SELECTED",
+          "Please select at least one deleted record."
+        );
+
+        return;
+      }
+
+      const names =
+        recordsToDelete
+          .slice(0, 10)
+          .map(
+            (record) =>
+              `• ${getPatientName(
+                record
+              )}`
+          )
+          .join("\n");
+
+      const extra =
+        recordsToDelete.length >
+        10
+          ? `\n• +${
+              recordsToDelete.length -
+              10
+            } more`
+          : "";
+
+      const confirmed =
+        window.confirm(
+          `PERMANENTLY DELETE ${recordsToDelete.length} backup record(s)?\n\n${names}${extra}\n\nThis will permanently remove the selected backup records from Deleted Records.\n\nThe original patient records will NOT be restored.\n\nThis action cannot be undone.`
+        );
+
+      if (!confirmed) {
+        return;
+      }
+
+      try {
+        setIsDeletingSelected(
+          true
+        );
+
+        // -------------------------------------------------
+        // FIRESTORE BATCH DELETE
+        // -------------------------------------------------
+
+        let batch =
+          writeBatch(db);
+
+        let operationCount = 0;
+
+        for (
+          const deletedRecord of
+            recordsToDelete
+        ) {
+          const deletedRecordRef =
+            doc(
+              db,
+              "deletedRecords",
+              deletedRecord.id
+            );
+
+          batch.delete(
+            deletedRecordRef
+          );
+
+          operationCount++;
+
+          // Firestore batch maximum is 500 writes.
+          // Keep a safe limit.
+          if (
+            operationCount >=
+            450
+          ) {
+            await batch.commit();
+
+            batch =
+              writeBatch(db);
+
+            operationCount = 0;
+          }
+        }
+
+        if (
+          operationCount > 0
+        ) {
+          await batch.commit();
+        }
+
+        // -------------------------------------------------
+        // AUDIT EACH PERMANENT DELETE
+        // -------------------------------------------------
+
+        const currentUser =
+          auth.currentUser;
+
+        const userEmail =
+          currentUser?.email ||
+          "Unknown User";
+
+        for (
+          const deletedRecord of
+            recordsToDelete
+        ) {
+          const auditSuccess =
+            await logAudit(
+              "PERMANENT DELETE",
+              "Deleted Records",
+              deletedRecord.originalRecordId ||
+                deletedRecord.id,
+              getPatientName(
+                deletedRecord
+              ),
+              "Deleted-record backup permanently removed.",
+              userEmail
+            );
+
+          if (!auditSuccess) {
+            console.warn(
+              "⚠️ Permanent delete audit failed for:",
+              deletedRecord.id
+            );
+          }
+        }
+
+        // -------------------------------------------------
+        // CLEAR SELECTION
+        // -------------------------------------------------
+
+        setSelectedRecordIds(
+          []
+        );
+
+        showNotification(
+          "success",
+          "BACKUPS DELETED",
+          `${recordsToDelete.length} backup record(s) were permanently deleted.`
+        );
+
+      } catch (error) {
+        console.error(
+          "❌ BULK PERMANENT DELETE ERROR:",
+          error
+        );
+
+        showNotification(
+          "error",
+          "DELETE FAILED",
+          error?.message ||
+            "Unable to permanently delete the selected backups."
+        );
+
+      } finally {
+        setIsDeletingSelected(
+          false
+        );
+      }
+    };
+
+  // =======================================================
   // RENDER
   // =======================================================
 
@@ -1023,6 +1210,7 @@ function DeletedRecords() {
 
         <div>
           <div className="deleted-records-title-row">
+
             <div className="deleted-records-icon">
               🗑
             </div>
@@ -1036,12 +1224,14 @@ function DeletedRecords() {
                 Backup and restore deleted YAKAP records
               </p>
             </div>
+
           </div>
         </div>
 
         <div className="deleted-records-header-stats">
 
           <div className="deleted-stat">
+
             <span>
               TOTAL
             </span>
@@ -1049,9 +1239,11 @@ function DeletedRecords() {
             <strong>
               {totalDeleted}
             </strong>
+
           </div>
 
           <div className="deleted-stat">
+
             <span>
               DELETED
             </span>
@@ -1059,9 +1251,11 @@ function DeletedRecords() {
             <strong>
               {activeDeleted}
             </strong>
+
           </div>
 
           <div className="deleted-stat">
+
             <span>
               RESTORED
             </span>
@@ -1069,6 +1263,7 @@ function DeletedRecords() {
             <strong>
               {restoredCount}
             </strong>
+
           </div>
 
         </div>
@@ -1176,20 +1371,41 @@ function DeletedRecords() {
             record(s) selected
           </div>
 
-          <button
-            type="button"
-            className="deleted-restore-selected"
-            onClick={
-              handleRestoreSelected
-            }
-            disabled={
-              isRestoringSelected
-            }
-          >
-            {isRestoringSelected
-              ? "RESTORING..."
-              : "♻ RESTORE SELECTED"}
-          </button>
+          <div className="deleted-bulk-actions">
+
+            <button
+              type="button"
+              className="deleted-restore-selected"
+              onClick={
+                handleRestoreSelected
+              }
+              disabled={
+                isRestoringSelected ||
+                isDeletingSelected
+              }
+            >
+              {isRestoringSelected
+                ? "RESTORING..."
+                : "♻ RESTORE SELECTED"}
+            </button>
+
+            <button
+              type="button"
+              className="deleted-permanent-selected"
+              onClick={
+                handleBulkPermanentDelete
+              }
+              disabled={
+                isRestoringSelected ||
+                isDeletingSelected
+              }
+            >
+              {isDeletingSelected
+                ? "DELETING..."
+                : "🗑 DELETE SELECTED"}
+            </button>
+
+          </div>
 
         </div>
 
@@ -1305,6 +1521,7 @@ function DeletedRecords() {
 
                 {filteredRecords.map(
                   (record) => {
+
                     const patient =
                       record.originalData ||
                       {};
@@ -1318,6 +1535,7 @@ function DeletedRecords() {
                       record.id;
 
                     return (
+
                       <tr
                         key={
                           record.id
@@ -1515,7 +1733,8 @@ function DeletedRecords() {
                                 }
                                 disabled={
                                   isProcessing ||
-                                  isRestoringSelected
+                                  isRestoringSelected ||
+                                  isDeletingSelected
                                 }
                               >
                                 {isProcessing
@@ -1535,7 +1754,8 @@ function DeletedRecords() {
                               }
                               disabled={
                                 isProcessing ||
-                                isRestoringSelected
+                                isRestoringSelected ||
+                                isDeletingSelected
                               }
                               title="Permanently delete this backup"
                             >
@@ -1546,11 +1766,13 @@ function DeletedRecords() {
 
                           {isRestored && (
                             <small className="deleted-restored-info">
+
                               Restored by{" "}
                               {
                                 record.restoredBy ||
                                 "Unknown User"
                               }
+
                               <br />
 
                               {
@@ -1558,12 +1780,14 @@ function DeletedRecords() {
                                   record.restoredAt
                                 )
                               }
+
                             </small>
                           )}
 
                         </td>
 
                       </tr>
+
                     );
                   }
                 )}
