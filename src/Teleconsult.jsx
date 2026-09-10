@@ -755,25 +755,13 @@ function Teleconsult() {
               })
             );
 
-          const completed =
-            patients.filter(
-              (patient) => {
-                const fpe =
-                  getIcareValue(
-                    patient,
-                    "fpe"
-                  );
+          const completed = patients.filter((patient) => {
+  const fpe = getIcareValue(patient, "fpe");
 
-                return (
-                  String(
-                    fpe || ""
-                  )
-                    .trim()
-                    .toUpperCase() ===
-                  "COMPLETED"
-                );
-              }
-            );
+  return ["DONE", "COMPLETED"].includes(
+    String(fpe || "").trim().toUpperCase()
+  );
+});
 
           setIcareCompletedPatients(
             completed
